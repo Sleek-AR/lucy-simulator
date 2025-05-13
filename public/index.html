@@ -12,31 +12,39 @@
         overflow: hidden;
       }
       #overlay {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        background: rgba(255, 255, 255, 0.95);
-        width: 100%;
-        padding: 1rem;
-        box-sizing: border-box;
-        z-index: 100;
         display: none;
       }
       #log {
-        height: 150px;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        max-height: 150px;
         overflow-y: auto;
-        border: 1px solid #ccc;
+        background: rgba(255, 255, 255, 0.95);
         padding: 10px;
-        background: #fff;
-        margin-bottom: 10px;
+        font-size: 14px;
       }
-      button {
-        font-size: 16px;
-        padding: 10px 20px;
+      .blinker {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
+        background-color: red;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+        z-index: 9999;
+        display: none;
+      }
+      @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
       }
     </style>
   </head>
   <body>
+    <div class="blinker" id="blinker"></div>
     <a-scene background="color: #ECECEC">
       <a-assets>
         <a-asset-item id="lucyModel" src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"></a-asset-item>
@@ -79,27 +87,22 @@
                 geometry="primitive: plane; height: 0.3; width: 1.4"
                 material="color: #00BFFF"
                 position="0 1 -1.5"
-                text="value: 🎙 Aufnahme starten; align: center"
-                class="clickable"
-                event-set__enter="_event: mouseenter; material.color: #FFD700"
-                event-set__leave="_event: mouseleave; material.color: #00BFFF">
+                text="value: 🎙 Gedrückt halten zum Sprechen; align: center"
+                class="clickable">
       </a-entity>
     </a-scene>
 
-    <div id="overlay">
-      <div id="log">💬 Lucy wartet auf deine Stimme...</div>
-      <button id="startBtn">🔴 Aufnahme starten</button>
-    </div>
+    <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
     <script>
       const log = document.getElementById("log");
+      const blinker = document.getElementById("blinker");
       const lucy = document.getElementById("lucy");
       const recordButton = document.getElementById("recordButton");
       const thinkingText = document.getElementById("thinkingText");
 
       let mediaRecorder;
       let audioChunks = [];
-      let isRecording = false;
       let micStream;
 
       function append(msg) {
@@ -132,65 +135,68 @@
         playVoiceFromText(text);
       }
 
-      recordButton.addEventListener("click", async () => {
-        if (!isRecording) {
-          try {
-            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
-            audioChunks = [];
+      async function startRecording() {
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
+          audioChunks = [];
 
-            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
-            mediaRecorder.onstop = async () => {
-              append("🛑 Aufnahme gestoppt.");
+          mediaRecorder.onstop = async () => {
+            append("🛑 Aufnahme gestoppt.");
+            blinker.style.display = "none";
+            if (micStream) micStream.getTracks().forEach(t => t.stop());
 
-              if (micStream) {
-                micStream.getTracks().forEach(track => track.stop());
-              }
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "speech.webm");
 
-              const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-              const formData = new FormData();
-              formData.append("audio", audioBlob, "speech.webm");
+            append("⏳ Sende Audio an Server...");
+            thinkingText.setAttribute("visible", true);
 
-              append("⏳ Sende Audio an Server...");
-              thinkingText.setAttribute("visible", true);
+            try {
+              const res = await fetch("/upload-audio", {
+                method: "POST",
+                body: formData
+              });
 
-              try {
-                const res = await fetch("/upload-audio", {
-                  method: "POST",
-                  body: formData
-                });
+              const data = await res.json();
+              const reply = data.response || data.error || "Fehler bei Antwort";
 
-                const data = await res.json();
-                const reply = data.response || data.error || "Fehler bei Antwort";
+              append("🤖 <b>Lucy:</b> " + reply);
+              speak(reply);
+            } catch (error) {
+              console.error("Upload-Fehler:", error);
+              append("❌ Fehler beim Senden oder Verarbeiten.");
+              thinkingText.setAttribute("visible", false);
+            }
+          };
 
-                append("🤖 <b>Lucy:</b> " + reply);
-                speak(reply);
-              } catch (error) {
-                console.error("Upload-Fehler:", error);
-                append("❌ Fehler beim Senden oder Verarbeiten.");
-                thinkingText.setAttribute("visible", false);
-              }
-            };
-
-            mediaRecorder.start();
-            isRecording = true;
-            recordButton.setAttribute("material", "color", "#FF4136");
-            recordButton.setAttribute("text", "value", "⏹️ Aufnahme stoppen");
-            append("🎙️ Aufnahme läuft...");
-          } catch (err) {
-            console.error("Mikrofon-Fehler:", err);
-          }
-        } else {
-          if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop();
-            isRecording = false;
-            recordButton.setAttribute("material", "color", "#00BFFF");
-            recordButton.setAttribute("text", "value", "🎙 Aufnahme starten");
-          } else {
-            console.warn("⚠️ mediaRecorder war nicht im Aufnahmezustand.");
-          }
+          mediaRecorder.start();
+          blinker.style.display = "block";
+          append("🎙️ Aufnahme läuft...");
+        } catch (err) {
+          console.error("Mikrofon-Fehler:", err);
         }
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      }
+
+      recordButton.addEventListener("mousedown", () => {
+        startRecording();
+      });
+
+      recordButton.addEventListener("mouseup", () => {
+        stopRecording();
+      });
+
+      recordButton.addEventListener("mouseleave", () => {
+        stopRecording();
       });
     </script>
   </body>
