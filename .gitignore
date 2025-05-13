@@ -1,0 +1,12 @@
+# Verstecke sensible Umgebungsvariablen
+.env
+
+# Vermeide versehentlichen Upload von Audiodateien
+uploads/
+
+# Ignoriere alle Node.js-Module (lokal installiert)
+node_modules/
+
+# Sonstige temporäre/systembedingte Dateien
+*.log
+.DS_Store
