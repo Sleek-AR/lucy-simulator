@@ -131,119 +131,123 @@
   <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
   <script>
-    const log = document.getElementById("log");
-    const blinker = document.getElementById("blinker");
-    const lucy = document.getElementById("lucy");
-    const recordButton = document.getElementById("recordButton");
-    const thinkingText = document.getElementById("thinkingText");
-    const listeningText = document.getElementById("listeningText");
-    const lucyGroup = document.getElementById("lucy-group");
+  const log = document.getElementById("log");
+  const blinker = document.getElementById("blinker");
+  const lucy = document.getElementById("lucy");
+  const recordButton = document.getElementById("recordButton");
+  const thinkingText = document.getElementById("thinkingText");
+  const listeningText = document.getElementById("listeningText");
+  const lucyGroup = document.getElementById("lucy-group");
 
-    let mediaRecorder;
-    let audioChunks = [];
-    let micStream;
+  let mediaRecorder;
+  let audioChunks = [];
+  let micStream;
 
-    function append(msg) {
-      log.innerHTML += `<div>${msg}</div>`;
-      log.scrollTop = log.scrollHeight;
+  function append(msg) {
+    log.innerHTML += `<div>${msg}</div>`;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function playVoiceFromText(text) {
+    try {
+      const response = await fetch("/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      lucy.emit("speak");
+      thinkingText.setAttribute("visible", false);
+      audio.play();
+      audio.onended = () => lucy.emit("stopspeak");
+    } catch (error) {
+      console.error("TTS-Fehler:", error);
+      append("⚠️ Konnte Antwort nicht abspielen.");
+      thinkingText.setAttribute("visible", false);
     }
+  }
 
-    async function playVoiceFromText(text) {
-      try {
-        const response = await fetch("/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
-        });
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        lucy.emit("speak");
-        thinkingText.setAttribute("visible", false);
-        audio.play();
-        audio.onended = () => lucy.emit("stopspeak");
-      } catch (error) {
-        console.error("TTS-Fehler:", error);
-        append("⚠️ Konnte Antwort nicht abspielen.");
-        thinkingText.setAttribute("visible", false);
-      }
+  function speak(text) {
+    playVoiceFromText(text);
+  }
+
+  async function startRecording() {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = async () => {
+        append("🛑 Aufnahme gestoppt.");
+        blinker.style.display = "none";
+        listeningText.setAttribute("visible", false);
+        if (micStream) micStream.getTracks().forEach(t => t.stop());
+
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "speech.webm");
+
+        append("⏳ Sende Audio an Server...");
+        thinkingText.setAttribute("visible", true);
+
+        try {
+          const res = await fetch("/upload-audio", {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          const reply = data.response || data.error || "Fehler bei Antwort";
+          append("🤖 <b>Lucy:</b> " + reply);
+          speak(reply);
+        } catch (error) {
+          console.error("Upload-Fehler:", error);
+          append("❌ Fehler beim Senden oder Verarbeiten.");
+          thinkingText.setAttribute("visible", false);
+        }
+      };
+
+      mediaRecorder.start();
+      blinker.style.display = "block";
+      listeningText.setAttribute("visible", true);
+      append("🎙️ Aufnahme läuft...");
+    } catch (err) {
+      console.error("Mikrofon-Fehler:", err);
     }
+  }
 
-    function speak(text) {
-      playVoiceFromText(text);
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
     }
+  }
 
-    async function startRecording() {
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
-        audioChunks = [];
+  document.getElementById("start-vr").onclick = () => {
+    document.querySelector("a-scene").enterVR();
+  };
 
-        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+  document.getElementById("start-ar").onclick = () => {
+    document.querySelector("a-scene").enterAR();
 
-        mediaRecorder.onstop = async () => {
-          append("🛑 Aufnahme gestoppt.");
-          blinker.style.display = "none";
-          listeningText.setAttribute("visible", false);
-          if (micStream) micStream.getTracks().forEach(t => t.stop());
+    // RICHTIG: Lucy 2m vor die Kamera setzen ohne THREE.js
+    const cameraEl = document.getElementById("mainCamera");
+    const cameraObj = cameraEl.object3D;
+    const camWorldPos = new AFRAME.THREE.Vector3();
+    cameraObj.getWorldPosition(camWorldPos);
 
-          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          const formData = new FormData();
-          formData.append("audio", audioBlob, "speech.webm");
+    const forwardVec = new AFRAME.THREE.Vector3(0, 0, -1).applyQuaternion(cameraObj.quaternion);
+    const newPos = camWorldPos.clone().add(forwardVec.multiplyScalar(2));
 
-          append("⏳ Sende Audio an Server...");
-          thinkingText.setAttribute("visible", true);
+    lucyGroup.setAttribute("position", `${newPos.x} ${newPos.y - 1.6} ${newPos.z}`);
+  };
 
-          try {
-            const res = await fetch("/upload-audio", {
-              method: "POST",
-              body: formData
-            });
-            const data = await res.json();
-            const reply = data.response || data.error || "Fehler bei Antwort";
-            append("🤖 <b>Lucy:</b> " + reply);
-            speak(reply);
-          } catch (error) {
-            console.error("Upload-Fehler:", error);
-            append("❌ Fehler beim Senden oder Verarbeiten.");
-            thinkingText.setAttribute("visible", false);
-          }
-        };
-
-        mediaRecorder.start();
-        blinker.style.display = "block";
-        listeningText.setAttribute("visible", true);
-        append("🎙️ Aufnahme läuft...");
-      } catch (err) {
-        console.error("Mikrofon-Fehler:", err);
-      }
-    }
-
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-      }
-    }
-
-    document.getElementById("start-vr").onclick = () => {
-      document.querySelector("a-scene").enterVR();
-    };
-
-    document.getElementById("start-ar").onclick = () => {
-      document.querySelector("a-scene").enterAR();
-      // Direkt vor Nutzer platzieren (immer sichtbar, kein Hit-Test)
-      const camera = document.getElementById("mainCamera");
-      const camWorldPos = new THREE.Vector3();
-      camera.object3D.getWorldPosition(camWorldPos);
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.object3D.quaternion);
-      const targetPos = camWorldPos.clone().add(forward.multiplyScalar(2));
-      lucyGroup.setAttribute("position", `${targetPos.x} ${targetPos.y - 1.6} ${targetPos.z}`);
-    };
-
-    recordButton.addEventListener("mousedown", startRecording);
-    recordButton.addEventListener("mouseup", stopRecording);
-    recordButton.addEventListener("mouseleave", stopRecording);
-  </script>
+  recordButton.addEventListener("mousedown", startRecording);
+  recordButton.addEventListener("mouseup", stopRecording);
+  recordButton.addEventListener("mouseleave", stopRecording);
+</script>
 </body>
 </html>
 
