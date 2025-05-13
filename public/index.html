@@ -98,7 +98,7 @@
 
           mediaRecorder.onstop = async () => {
             append("🛑 Aufnahme gestoppt.");
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm;codecs=opus" }); // 👈 hier der Fix
             const formData = new FormData();
             formData.append("audio", audioBlob, "speech.webm");
 
@@ -111,7 +111,7 @@
               });
 
               const data = await res.json();
-              const reply = data.response || "Fehler bei Antwort";
+              const reply = data.response || data.error || "Fehler bei Antwort";
 
               append("🤖 <b>Lucy:</b> " + reply);
               speak(reply);
