@@ -83,6 +83,18 @@
         </a-animation>
       </a-entity>
 
+      <a-entity id="listeningText"
+                text="value: Lucy hört zu...; align: center; color: #f00"
+                position="0 2.9 -2"
+                visible="false">
+        <a-animation attribute="material.opacity"
+                     from="0.3" to="1"
+                     dur="1000"
+                     direction="alternate"
+                     repeat="indefinite">
+        </a-animation>
+      </a-entity>
+
       <a-entity id="recordButton"
                 geometry="primitive: plane; height: 0.3; width: 1.4"
                 material="color: #00BFFF"
@@ -100,6 +112,7 @@
       const lucy = document.getElementById("lucy");
       const recordButton = document.getElementById("recordButton");
       const thinkingText = document.getElementById("thinkingText");
+      const listeningText = document.getElementById("listeningText");
 
       let mediaRecorder;
       let audioChunks = [];
@@ -146,6 +159,7 @@
           mediaRecorder.onstop = async () => {
             append("🛑 Aufnahme gestoppt.");
             blinker.style.display = "none";
+            listeningText.setAttribute("visible", false);
             if (micStream) micStream.getTracks().forEach(t => t.stop());
 
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
@@ -175,6 +189,7 @@
 
           mediaRecorder.start();
           blinker.style.display = "block";
+          listeningText.setAttribute("visible", true);
           append("🎙️ Aufnahme läuft...");
         } catch (err) {
           console.error("Mikrofon-Fehler:", err);
