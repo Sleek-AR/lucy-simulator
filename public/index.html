@@ -38,13 +38,29 @@
       50% { opacity: 0; }
       100% { opacity: 1; }
     }
+    #ar-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #00bfff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 999;
+    }
   </style>
   <script>
-    AFRAME.registerComponent('tap-place', {
+    let hitTestActive = false;
+
+    AFRAME.registerComponent('manual-hit-test', {
       init: function () {
         const scene = this.el.sceneEl;
         const arSystem = scene.systems['webxr-hit-test'];
+
         this.el.addEventListener('click', async () => {
+          if (!hitTestActive) return;
           if (!arSystem || !arSystem.viewerSpace || !arSystem.hitTestSource) return;
           const frame = arSystem.xrFrame;
           const hitTestResults = frame.getHitTestResults(arSystem.hitTestSource);
@@ -52,20 +68,26 @@
             const referenceSpace = arSystem.refSpace;
             const hit = hitTestResults[0];
             const pose = hit.getPose(referenceSpace);
-            const target = document.getElementById('lucy-group');
-            target.setAttribute('position', `${pose.transform.position.x} ${pose.transform.position.y} ${pose.transform.position.z}`);
-            target.setAttribute('visible', true);
+            const group = document.getElementById('lucy-group');
+            group.setAttribute('position', `${pose.transform.position.x} ${pose.transform.position.y} ${pose.transform.position.z}`);
           }
         });
       }
     });
+
+    function enterAR() {
+      hitTestActive = true;
+      const sceneEl = document.querySelector('a-scene');
+      sceneEl.enterAR();
+    }
   </script>
 </head>
 <body>
+  <button id="ar-button" onclick="enterAR()">🔍 AR starten</button>
   <div class="blinker" id="blinker"></div>
   <a-scene
-    webxr="requiredFeatures: hit-test"
-    tap-place
+    webxr="optionalFeatures: hit-test"
+    manual-hit-test
     vr-mode-ui="enabled: true"
     embedded>
 
@@ -85,8 +107,8 @@
       </a-camera>
     </a-entity>
 
-    <!-- Gruppe mit Lucy & UI, wird per Hit-Test platziert -->
-    <a-entity id="lucy-group" visible="false">
+    <!-- Lucy-Gruppe bleibt immer sichtbar -->
+    <a-entity id="lucy-group" position="0 0 -2">
       <a-entity id="lucy"
                 gltf-model="#lucyModel"
                 scale="1.5 1.5 1.5"
@@ -227,4 +249,3 @@
   </script>
 </body>
 </html>
-
