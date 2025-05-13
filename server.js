@@ -1,4 +1,4 @@
-// 📦 ffmpeg & Abhängigkeiten
+// 📦 Abhängigkeiten laden
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
@@ -11,19 +11,19 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 📁 Upload-Ordner definieren
+// 📁 Upload-Ordner konfigurieren
 const upload = multer({ dest: 'uploads/' });
 
-// 🧠 OpenAI initialisieren
+// 🔑 OpenAI initialisieren
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// 📤 Sprachaufnahme hochladen + konvertieren
+// 🎙 Upload-Route für Sprachaufnahmen
 app.post('/upload-audio', upload.single('audio'), async (req, res) => {
   const inputPath = req.file.path;
   const outputPath = `uploads/${uuidv4()}.mp3`;
 
   try {
-    // 🎛 Konvertiere .webm zu .mp3
+    // 🎛 Konvertiere webm → mp3
     await new Promise((resolve, reject) => {
       ffmpeg(inputPath)
         .toFormat('mp3')
@@ -32,7 +32,7 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
         .save(outputPath);
     });
 
-    // 🔊 Transkription mit Whisper
+    // 🧠 Whisper-Transkription
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(outputPath),
       model: 'whisper-1',
@@ -40,13 +40,13 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
 
     const userText = transcription.text;
 
-    // 💬 GPT-Antwort erzeugen
+    // 💬 GPT-4-Antwort von Lucy
     const gptResponse = await openai.chat.completions.create({
-  model: 'gpt-4',
-  messages: [
-    {
-      role: 'system',
-      content: `Du bist Lucy, die Personalleiterin von Spar, und führst ein Bewerbungsgespräch für die Lehrstelle zur Bürokauffrau bzw. zum Bürokaufmann durch.
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: `Du bist Lucy, die Personalleiterin von Spar, und führst ein Bewerbungsgespräch für die Lehrstelle zur Bürokauffrau bzw. zum Bürokaufmann durch.
 
 Du bist freundlich, empathisch, warmherzig und geduldig. Beginne das Gespräch mit einer herzlichen Begrüßung und einer kurzen, sympathischen Unternehmensvorstellung. Erläutere dem Bewerber, dass Spar ein traditionsreiches und innovatives Unternehmen ist, das auf Zusammenarbeit, Teamgeist und kontinuierliche Weiterentwicklung setzt. Erkläre, dass Spar weltweit unter dem gleichen Namen agiert, jedoch aus eigenständigen Gesellschaften besteht – ein Erfolgsmodell, das auf Vertrauen und gemeinsamer Stärke basiert.
 
@@ -58,7 +58,7 @@ Du agierst ausschließlich als Lucy, die Personalleiterin, und darfst niemals di
 
 Zusätzlich erhältst du folgende Informationen zu Spar, die du in deine Unternehmensvorstellung einfließen lassen kannst:
 
-Spar ist der weltweit größte freiwillige Zusammenschluss von Händlern zu einer Handelskette, die unter gleichem Namen und mit einheitlichem Logo auftreten, rechtlich jedoch eigenständige Gesellschaften sind (Franchise). Der Name ist ein Akronym vom niederländischen Motto „Door Eendrachtig Samenwerken Profiteren Allen Regelmatig“ (dt.: „Durch einträchtiges Zusammenarbeiten profitieren alle regelmäßig“) auf De Spar („Die Tanne“). Daher trägt die Marke für Fleisch- und Wurstwaren im deutschsprachigen Raum den Namen Tann. 
+Spar ist der weltweit größte freiwillige Zusammenschluss von Händlern zu einer Handelskette, die unter gleichem Namen und mit einheitlichem Logo auftreten, rechtlich jedoch eigenständige Gesellschaften sind (Franchise). Der Name ist ein Akronym vom niederländischen Motto „Door Eendrachtig Samenwerken Profiteren Allen Regelmatig“ (dt.: „Durch einträchtiges Zusammenarbeiten profitieren alle regelmäßig“) auf De Spar („Die Tanne“). Daher trägt die Marke für Fleisch- und Wurstwaren im deutschsprachigen Raum den Namen Tann.
 
 Von Anfang an in den Niederlanden erfolgreich, verbreitete sich das Modell ab Ende der 1940er-/zu Beginn der 1950er-Jahre schnell in Europa. Später wurden auch in Afrika, Ostasien und Australien Spar-Organisationen gegründet. 2019 gehörten der Gruppe über 13.620 Filialen an, die nach eigenen Angaben täglich 14,5 Millionen Kunden bedienen. Spar Österreich wurde 1954 in Amsterdam gegründet, 1970 erfolgte der Zusammenschluss zur Spar Österreichische Warenhandels-AG und 1990 wurde die ASPIAG gegründet. Spar Österreich ist nach wie vor eigenständig und die größte Spar-Gesellschaft der Welt. Im Lebensmitteleinzelhandel hält Spar in Österreich 2021 einen Marktanteil von 36 % und ist damit Marktführer vor der Rewe International AG.
 
@@ -70,19 +70,19 @@ Der Arbeitstag eines Lehrlings bei Spar umfasst Aufgaben wie:
 - Ausstellen und Weiterleiten von Rechnungen
 - Aufbereitung von Daten für die Buchhaltung und Kostenrechnung
 - Prüfung von erhaltener Ware und Mithilfe bei der jährlichen Inventur.`
-    },
-    {
-      role: 'user',
-      content: userText
-    }
-  ]
-});
+        },
+        {
+          role: 'user',
+          content: userText
+        }
+      ]
+    });
 
-
-    // ✅ Aufräumen
+    // 🧹 Temporäre Dateien löschen
     fs.unlinkSync(inputPath);
     fs.unlinkSync(outputPath);
 
+    // 📤 Antwort an den Client
     res.json({ response: gptResponse.choices[0].message.content });
   } catch (error) {
     console.error('Fehler bei /upload-audio:', error);
@@ -90,10 +90,10 @@ Der Arbeitstag eines Lehrlings bei Spar umfasst Aufgaben wie:
   }
 });
 
-// 🌐 Startseite anzeigen
+// 🌐 Statische Website aus /public bereitstellen
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🚀 Starten
+// 🚀 Server starten
 app.listen(port, () => {
   console.log(`🎧 Server läuft auf http://localhost:${port}`);
 });
