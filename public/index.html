@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Lucy Bewerbungssimulator</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
     <style>
       body {
         margin: 0;
@@ -19,6 +20,7 @@
         padding: 1rem;
         box-sizing: border-box;
         z-index: 100;
+        display: none; /* ausgeblendet für VR */
       }
       #log {
         height: 150px;
@@ -35,7 +37,6 @@
     </style>
   </head>
   <body>
-    <!-- VR/3D Szene -->
     <a-scene background="color: #ECECEC">
       <a-assets>
         <a-asset-item
@@ -54,9 +55,19 @@
         scale="1.5 1.5 1.5"
         animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
       ></a-entity>
+
+      <!-- 🎙️ Interaktiver Start/Stopp Button -->
+      <a-entity id="recordButton"
+                geometry="primitive: plane; height: 0.3; width: 1.4"
+                material="color: #00BFFF"
+                position="0 1 -1.5"
+                text="value: 🎙 Aufnahme starten; align: center"
+                class="clickable"
+                event-set__enter="_event: mouseenter; material.color: #FFD700"
+                event-set__leave="_event: mouseleave; material.color: #00BFFF">
+      </a-entity>
     </a-scene>
 
-    <!-- Sprachinterface -->
     <div id="overlay">
       <div id="log">💬 Lucy wartet auf deine Stimme...</div>
       <button id="startBtn">🔴 Aufnahme starten</button>
@@ -64,8 +75,8 @@
 
     <script>
       const log = document.getElementById("log");
-      const button = document.getElementById("startBtn");
       const lucy = document.getElementById("lucy");
+      const recordButton = document.getElementById("recordButton");
 
       let mediaRecorder;
       let audioChunks = [];
@@ -99,7 +110,7 @@
         playVoiceFromText(text);
       }
 
-      button.onclick = async () => {
+      recordButton.addEventListener("click", async () => {
         if (!isRecording) {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
@@ -118,7 +129,7 @@
             try {
               const res = await fetch("/upload-audio", {
                 method: "POST",
-                body: formData,
+                body: formData
               });
 
               const data = await res.json();
@@ -134,14 +145,15 @@
 
           mediaRecorder.start();
           isRecording = true;
-          button.textContent = "⏹️ Aufnahme stoppen";
+          recordButton.setAttribute("text", "value", "⏹️ Aufnahme stoppen");
           append("🎙️ Aufnahme läuft...");
         } else {
           mediaRecorder.stop();
           isRecording = false;
-          button.textContent = "🔴 Aufnahme starten";
+          recordButton.setAttribute("text", "value", "🎙 Aufnahme starten");
         }
-      };
+      });
     </script>
   </body>
 </html>
+
