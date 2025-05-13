@@ -34,11 +34,6 @@
         font-size: 16px;
         padding: 10px 20px;
       }
-      @keyframes blink {
-        0% { opacity: 0.3; }
-        50% { opacity: 1; }
-        100% { opacity: 0.3; }
-      }
     </style>
   </head>
   <body>
@@ -71,9 +66,8 @@
 
       <a-entity id="thinkingText"
                 text="value: Lucy denkt nach...; align: center; color: #555"
-                position="0 2.4 -2"
-                visible="false"
-                material="opacity: 0.7">
+                position="0 3.2 -2"
+                visible="false">
         <a-animation attribute="material.opacity"
                      from="0.3" to="1"
                      dur="1000"
@@ -140,49 +134,57 @@
 
       recordButton.addEventListener("click", async () => {
         if (!isRecording) {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-          audioChunks = [];
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+            audioChunks = [];
 
-          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
-          mediaRecorder.onstop = async () => {
-            append("🛑 Aufnahme gestoppt.");
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-            const formData = new FormData();
-            formData.append("audio", audioBlob, "speech.webm");
+            mediaRecorder.onstop = async () => {
+              append("🛑 Aufnahme gestoppt.");
+              const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+              const formData = new FormData();
+              formData.append("audio", audioBlob, "speech.webm");
 
-            append("⏳ Sende Audio an Server...");
-            thinkingText.setAttribute("visible", true);
+              append("⏳ Sende Audio an Server...");
+              thinkingText.setAttribute("visible", true);
 
-            try {
-              const res = await fetch("/upload-audio", {
-                method: "POST",
-                body: formData
-              });
+              try {
+                const res = await fetch("/upload-audio", {
+                  method: "POST",
+                  body: formData
+                });
 
-              const data = await res.json();
-              const reply = data.response || data.error || "Fehler bei Antwort";
+                const data = await res.json();
+                const reply = data.response || data.error || "Fehler bei Antwort";
 
-              append("🤖 <b>Lucy:</b> " + reply);
-              speak(reply);
-            } catch (error) {
-              console.error("Upload-Fehler:", error);
-              append("❌ Fehler beim Senden oder Verarbeiten.");
-              thinkingText.setAttribute("visible", false);
-            }
-          };
+                append("🤖 <b>Lucy:</b> " + reply);
+                speak(reply);
+              } catch (error) {
+                console.error("Upload-Fehler:", error);
+                append("❌ Fehler beim Senden oder Verarbeiten.");
+                thinkingText.setAttribute("visible", false);
+              }
+            };
 
-          mediaRecorder.start();
-          isRecording = true;
-          recordButton.setAttribute("material", "color", "#FF4136");
-          recordButton.setAttribute("text", "value", "⏹️ Aufnahme stoppen");
-          append("🎙️ Aufnahme läuft...");
+            mediaRecorder.start();
+            isRecording = true;
+            recordButton.setAttribute("material", "color", "#FF4136");
+            recordButton.setAttribute("text", "value", "⏹️ Aufnahme stoppen");
+            append("🎙️ Aufnahme läuft...");
+          } catch (err) {
+            console.error("Mikrofon-Fehler:", err);
+          }
         } else {
-          mediaRecorder.stop();
-          isRecording = false;
-          recordButton.setAttribute("material", "color", "#00BFFF");
-          recordButton.setAttribute("text", "value", "🎙 Aufnahme starten");
+          if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            isRecording = false;
+            recordButton.setAttribute("material", "color", "#00BFFF");
+            recordButton.setAttribute("text", "value", "🎙 Aufnahme starten");
+          } else {
+            console.warn("⚠️ mediaRecorder war nicht im Aufnahmezustand.");
+          }
         }
       });
     </script>
