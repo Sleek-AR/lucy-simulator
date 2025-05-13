@@ -1,60 +1,66 @@
-const express = require('express');
-const multer = require('multer');
+// 📦 ffmpeg & Abhängigkeiten
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const express = require('express');
 const { OpenAI } = require('openai');
+const ffmpeg = require('fluent-ffmpeg');
+const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 📁 Upload-Zielordner (temporär)
+// 📁 Upload-Ordner definieren
 const upload = multer({ dest: 'uploads/' });
 
 // 🧠 OpenAI initialisieren
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// 🌐 Statische Dateien bereitstellen (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// 🏠 Startseite (index.html)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// 🎤 Route zum Audio-Upload
+// 📤 Sprachaufnahme hochladen + konvertieren
 app.post('/upload-audio', upload.single('audio'), async (req, res) => {
+  const inputPath = req.file.path;
+  const outputPath = `uploads/${uuidv4()}.mp3`;
+
   try {
-    const audioPath = req.file.path;
+    // 🎛 Konvertiere .webm zu .mp3
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputPath)
+        .toFormat('mp3')
+        .on('end', resolve)
+        .on('error', reject)
+        .save(outputPath);
+    });
 
     // 🔊 Transkription mit Whisper
     const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(audioPath),
+      file: fs.createReadStream(outputPath),
       model: 'whisper-1',
     });
 
     const userText = transcription.text;
 
-    // 💬 ChatGPT-Antwort
+    // 💬 GPT-Antwort erzeugen
     const gptResponse = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [{ role: 'user', content: userText }],
     });
 
-    // 🧹 Aufräumen
-    fs.unlinkSync(audioPath);
+    // ✅ Aufräumen
+    fs.unlinkSync(inputPath);
+    fs.unlinkSync(outputPath);
 
-    // ✅ Antwort zurück an Client
     res.json({ response: gptResponse.choices[0].message.content });
   } catch (error) {
-    console.error('Fehler bei /upload-audio:', error.message);
-    res.status(500).json({ error: 'Fehler beim Verarbeiten der Audiodatei.' });
+    console.error('Fehler bei /upload-audio:', error);
+    res.status(500).json({ error: error.message || 'Verarbeitungsfehler' });
   }
 });
 
-// 🚀 Server starten (lokal oder bei Render)
+// 🌐 Startseite anzeigen
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 🚀 Starten
 app.listen(port, () => {
-  console.log(`Server läuft auf http://localhost:${port}`);
+  console.log(`🎧 Server läuft auf http://localhost:${port}`);
 });
