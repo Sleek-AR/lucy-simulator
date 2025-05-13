@@ -67,14 +67,20 @@
   <script>
     let hitTestActive = false;
     let arStarted = false;
+    let placementIndicator = null;
 
     AFRAME.registerComponent('manual-hit-test', {
       init: function () {
         const scene = this.el.sceneEl;
-        const arSystem = scene.systems['webxr-hit-test'];
+        let arSystem = null;
+
+        scene.addEventListener('enter-vr', () => {
+          arSystem = scene.systems['webxr-hit-test'];
+        });
 
         this.el.addEventListener('click', async () => {
           if (!hitTestActive || !arStarted) return;
+          arSystem = arSystem || scene.systems['webxr-hit-test'];
           if (!arSystem || !arSystem.viewerSpace || !arSystem.hitTestSource) return;
 
           const frame = arSystem.xrFrame;
@@ -85,6 +91,7 @@
             const pose = hit.getPose(referenceSpace);
             const group = document.getElementById('lucy-group');
             group.setAttribute('position', `${pose.transform.position.x} ${pose.transform.position.y} ${pose.transform.position.z}`);
+            if (placementIndicator) placementIndicator.setAttribute('visible', 'false');
           }
         });
       }
@@ -119,7 +126,7 @@
       </a-camera>
     </a-entity>
 
-    <a-entity id="lucy-group" position="0 0 -2">
+    <a-entity id="lucy-group" position="0 0 -2" visible="true">
       <a-entity id="lucy"
                 gltf-model="#lucyModel"
                 scale="1.5 1.5 1.5"
@@ -156,6 +163,16 @@
                 class="clickable">
       </a-entity>
     </a-entity>
+
+    <!-- Platzierungshilfe -->
+    <a-ring id="placement-indicator"
+            position="0 0 -1"
+            rotation="-90 0 0"
+            radius-inner="0.05"
+            radius-outer="0.07"
+            color="#00bfff"
+            visible="false">
+    </a-ring>
   </a-scene>
 
   <div id="log">💬 Lucy wartet auf deine Stimme...</div>
@@ -167,6 +184,7 @@
     const recordButton = document.getElementById("recordButton");
     const thinkingText = document.getElementById("thinkingText");
     const listeningText = document.getElementById("listeningText");
+    placementIndicator = document.getElementById("placement-indicator");
 
     let mediaRecorder;
     let audioChunks = [];
@@ -261,6 +279,7 @@
     document.getElementById("start-ar").onclick = () => {
       hitTestActive = true;
       arStarted = true;
+      placementIndicator.setAttribute('visible', 'true');
       document.querySelector("a-scene").enterAR();
     };
 
@@ -270,3 +289,4 @@
   </script>
 </body>
 </html>
+
