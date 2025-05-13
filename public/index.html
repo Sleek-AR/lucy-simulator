@@ -91,16 +91,16 @@
       button.onclick = async () => {
         if (!isRecording) {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" }); // explizit webm
           audioChunks = [];
 
           mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
           mediaRecorder.onstop = async () => {
             append("🛑 Aufnahme gestoppt.");
-            const audioBlob = new Blob(audioChunks, { type: "audio/wav" }); // ✅ MIME-Typ auf .wav gesetzt
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
             const formData = new FormData();
-            formData.append("audio", audioBlob, "speech.wav"); // ✅ Dateiname angepasst
+            formData.append("audio", audioBlob, "speech.webm");
 
             append("⏳ Sende Audio an Server...");
 
