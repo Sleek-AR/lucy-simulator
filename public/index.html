@@ -98,9 +98,9 @@
 
           mediaRecorder.onstop = async () => {
             append("🛑 Aufnahme gestoppt.");
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm;codecs=opus" }); // 👈 hier der Fix
+            const audioBlob = new Blob(audioChunks, { type: "audio/wav" }); // ✅ MIME-Typ auf .wav gesetzt
             const formData = new FormData();
-            formData.append("audio", audioBlob, "speech.webm");
+            formData.append("audio", audioBlob, "speech.wav"); // ✅ Dateiname angepasst
 
             append("⏳ Sende Audio an Server...");
 
