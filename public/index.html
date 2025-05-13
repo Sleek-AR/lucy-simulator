@@ -76,22 +76,33 @@
         log.scrollTop = log.scrollHeight;
       }
 
-      function speak(text) {
-        if ("speechSynthesis" in window) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = "de-DE";
-          utterance.onstart = () => lucy.emit("speak");
-          utterance.onend = () => lucy.emit("stopspeak");
-          speechSynthesis.speak(utterance);
-        } else {
-          append("⚠️ Sprachausgabe nicht unterstützt.");
+      async function playVoiceFromText(text) {
+        try {
+          const response = await fetch("/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+          });
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          lucy.emit("speak");
+          audio.play();
+          audio.onended = () => lucy.emit("stopspeak");
+        } catch (error) {
+          console.error("TTS-Fehler:", error);
+          append("⚠️ Konnte Antwort nicht abspielen.");
         }
+      }
+
+      function speak(text) {
+        playVoiceFromText(text);
       }
 
       button.onclick = async () => {
         if (!isRecording) {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" }); // explizit webm
+          mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
           audioChunks = [];
 
           mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
@@ -105,7 +116,7 @@
             append("⏳ Sende Audio an Server...");
 
             try {
-              const res = await fetch("https://lucy-simulator.onrender.com/upload-audio", {
+              const res = await fetch("/upload-audio", {
                 method: "POST",
                 body: formData,
               });
