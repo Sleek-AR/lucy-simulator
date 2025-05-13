@@ -20,7 +20,7 @@
         padding: 1rem;
         box-sizing: border-box;
         z-index: 100;
-        display: none; /* ausgeblendet für VR */
+        display: none; /* versteckt für VR */
       }
       #log {
         height: 150px;
@@ -39,15 +39,25 @@
   <body>
     <a-scene background="color: #ECECEC">
       <a-assets>
-        <a-asset-item
-          id="lucyModel"
-          src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"
-        ></a-asset-item>
+        <a-asset-item id="lucyModel" src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"></a-asset-item>
       </a-assets>
 
       <a-light type="ambient" intensity="1.0"></a-light>
-      <a-camera position="0 1.6 0"></a-camera>
 
+      <!-- 📡 Kamera mit sichtbarem Raycaster-Strahl -->
+      <a-entity id="cameraRig">
+        <a-camera position="0 1.6 0"
+                  raycaster="objects: .clickable"
+                  cursor="rayOrigin: mouse">
+          <a-entity cursor="rayOrigin: mouse"
+                    geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+                    material="color: black; shader: flat"
+                    position="0 0 -1">
+          </a-entity>
+        </a-camera>
+      </a-entity>
+
+      <!-- 🤖 Lucy -->
       <a-entity
         id="lucy"
         gltf-model="#lucyModel"
@@ -156,4 +166,5 @@
     </script>
   </body>
 </html>
+
 
