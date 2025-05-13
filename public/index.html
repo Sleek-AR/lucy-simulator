@@ -38,21 +38,35 @@
       50% { opacity: 0; }
       100% { opacity: 1; }
     }
-    #ar-button {
+    #mode-buttons {
       position: absolute;
       top: 20px;
-      left: 20px;
-      background: #00bfff;
-      color: white;
-      border: none;
-      padding: 10px 15px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      gap: 10px;
+    }
+    #mode-buttons button {
+      background: white;
+      border: 2px solid #444;
+      color: #222;
+      font-weight: bold;
+      padding: 10px 16px;
       font-size: 16px;
+      border-radius: 8px;
       cursor: pointer;
-      z-index: 999;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #mode-buttons button:hover {
+      background: #e0f0ff;
+      border-color: #00bfff;
+      color: #00bfff;
     }
   </style>
   <script>
     let hitTestActive = false;
+    let arStarted = false;
 
     AFRAME.registerComponent('manual-hit-test', {
       init: function () {
@@ -60,8 +74,9 @@
         const arSystem = scene.systems['webxr-hit-test'];
 
         this.el.addEventListener('click', async () => {
-          if (!hitTestActive) return;
+          if (!hitTestActive || !arStarted) return;
           if (!arSystem || !arSystem.viewerSpace || !arSystem.hitTestSource) return;
+
           const frame = arSystem.xrFrame;
           const hitTestResults = frame.getHitTestResults(arSystem.hitTestSource);
           if (hitTestResults.length > 0) {
@@ -74,16 +89,13 @@
         });
       }
     });
-
-    function enterAR() {
-      hitTestActive = true;
-      const sceneEl = document.querySelector('a-scene');
-      sceneEl.enterAR();
-    }
   </script>
 </head>
 <body>
-  <button id="ar-button" onclick="enterAR()">🔍 AR starten</button>
+  <div id="mode-buttons">
+    <button id="start-ar">AR</button>
+    <button id="start-vr">VR</button>
+  </div>
   <div class="blinker" id="blinker"></div>
   <a-scene
     webxr="optionalFeatures: hit-test"
@@ -107,7 +119,6 @@
       </a-camera>
     </a-entity>
 
-    <!-- Lucy-Gruppe bleibt immer sichtbar -->
     <a-entity id="lucy-group" position="0 0 -2">
       <a-entity id="lucy"
                 gltf-model="#lucyModel"
@@ -243,9 +254,20 @@
       }
     }
 
+    document.getElementById("start-vr").onclick = () => {
+      document.querySelector("a-scene").enterVR();
+    };
+
+    document.getElementById("start-ar").onclick = () => {
+      hitTestActive = true;
+      arStarted = true;
+      document.querySelector("a-scene").enterAR();
+    };
+
     recordButton.addEventListener("mousedown", startRecording);
     recordButton.addEventListener("mouseup", stopRecording);
     recordButton.addEventListener("mouseleave", stopRecording);
   </script>
 </body>
 </html>
+
