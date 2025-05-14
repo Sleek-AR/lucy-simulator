@@ -109,7 +109,7 @@
               geometry="primitive: plane; height: 0.3; width: 1.4"
               material="color: #00BFFF"
               position="0 1 -1.5"
-              text="value: 🎙 Button halten zum Sprechen; align: center"
+              text="value: 🎙 Leertaste oder Trigger gedrückt halten; align: center"
               class="clickable">
     </a-entity>
   </a-scene>
@@ -225,6 +225,18 @@
     // VR Controller halten
     recordButton.addEventListener("triggerdown", startRecording);
     recordButton.addEventListener("triggerup", stopRecording);
+
+    // Web: Leertaste gedrückt halten
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        startRecording();
+      }
+    });
+    document.addEventListener("keyup", (e) => {
+      if (e.code === "Space") {
+        stopRecording();
+      }
+    });
 
     // Größe von Lucy je nach Modus
     AFRAME.scenes[0].addEventListener("enter-vr", () => {
