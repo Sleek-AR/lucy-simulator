@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Lucy Bewerbungssimulator</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-  <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -52,13 +52,13 @@
     <a-sky color="#dfe9f3"></a-sky>
     <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-    <!-- Bewegliches Kamerarig -->
+    <!-- Bewegliches KameraRig mit Joystick-Steuerung -->
     <a-entity id="cameraRig" movement-controls="fly: false">
       <a-camera position="0 1.6 0"
+                look-controls
                 raycaster="objects: .clickable"
-                cursor="rayOrigin: mouse"
-                look-controls>
-        <a-entity cursor="rayOrigin: mouse"
+                cursor="rayOrigin: entity">
+        <a-entity cursor
                   geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
                   material="color: black; shader: flat"
                   position="0 0 -1">
@@ -66,11 +66,11 @@
       </a-camera>
     </a-entity>
 
-    <!-- VR Controller Unterstützung -->
+    <!-- VR Controller Strahlen -->
     <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
 
-    <!-- Lucy in realistischer Größe -->
+    <!-- Lucy (realistische Größe) -->
     <a-entity id="lucy"
               gltf-model="#lucyModel"
               position="0 0 -2"
@@ -80,7 +80,7 @@
 
     <a-entity id="thinkingText"
               text="value: Lucy denkt nach...; align: center; color: #555"
-              position="0 3.2 -2"
+              position="0 2.8 -2"
               visible="false">
       <a-animation attribute="material.opacity"
                    from="0.3" to="1"
@@ -92,7 +92,7 @@
 
     <a-entity id="listeningText"
               text="value: Lucy hört zu...; align: center; color: #f00"
-              position="0 2.9 -2"
+              position="0 2.5 -2"
               visible="false">
       <a-animation attribute="material.opacity"
                    from="0.3" to="1"
@@ -102,12 +102,12 @@
       </a-animation>
     </a-entity>
 
-    <!-- Aufnahme-Button -->
+    <!-- Sprachaufnahme-Button klickbar in VR -->
     <a-entity id="recordButton"
               geometry="primitive: plane; height: 0.3; width: 1.4"
               material="color: #00BFFF"
-              position="0 1 -1.5"
-              text="value: 🎙 Button halten zum Sprechen; align: center"
+              position="0 1.4 -2"
+              text="value: 🎙 Zum Starten klicken; align: center"
               class="clickable">
     </a-entity>
   </a-scene>
