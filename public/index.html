@@ -46,6 +46,7 @@
   <a-scene xr-compatible vr-mode-ui="enabled: true" background="color: #ECECEC">
     <a-assets>
       <a-asset-item id="lucyModel" src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"></a-asset-item>
+      <a-asset-item id="officeSet" src="/mnt/data/icons8_high_chairs_blackboard_round_table.glb"></a-asset-item>
     </a-assets>
 
     <a-light type="ambient" intensity="1.0"></a-light>
@@ -72,6 +73,12 @@
               position="0 0 -2"
               scale="1.5 1.5 1.5"
               animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak">
+    </a-entity>
+
+    <a-entity gltf-model="#officeSet"
+              position="0 0 -4"
+              scale="0.7 0.7 0.7"
+              rotation="0 0 0">
     </a-entity>
 
     <a-entity id="thinkingText"
