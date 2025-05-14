@@ -38,40 +38,10 @@
       50% { opacity: 0; }
       100% { opacity: 1; }
     }
-    #mode-buttons {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      gap: 10px;
-    }
-    #mode-buttons button {
-      background: white;
-      border: 2px solid #444;
-      color: #222;
-      font-weight: bold;
-      padding: 10px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    #mode-buttons button:hover {
-      background: #e0f0ff;
-      border-color: #00bfff;
-      color: #00bfff;
-    }
   </style>
 </head>
 <body>
   <div class="blinker" id="blinker"></div>
-
-  <div id="mode-buttons">
-    <button id="start-ar">AR</button>
-    <button id="start-vr">VR</button>
-  </div>
 
   <a-scene xr-compatible vr-mode-ui="enabled: true" background="color: #ECECEC">
     <a-assets>
@@ -83,12 +53,11 @@
     <a-sky color="#dfe9f3"></a-sky>
     <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-    <!-- Kamera + Cursor -->
     <a-entity id="cameraRig">
       <a-camera position="0 1.6 0"
                 raycaster="objects: .clickable"
-                cursor="rayOrigin: mouse">
-        <a-entity cursor="rayOrigin: mouse"
+                cursor="rayOrigin: entity">
+        <a-entity cursor
                   geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
                   material="color: black; shader: flat"
                   position="0 0 -1">
@@ -96,11 +65,9 @@
       </a-camera>
     </a-entity>
 
-    <!-- VR Controller Unterstützung -->
     <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
 
-    <!-- Lucy -->
     <a-entity id="lucy"
               gltf-model="#lucyModel"
               position="0 0 -2"
@@ -132,7 +99,6 @@
       </a-animation>
     </a-entity>
 
-    <!-- Aufnahme-Button -->
     <a-entity id="recordButton"
               geometry="primitive: plane; height: 0.3; width: 1.4"
               material="color: #00BFFF"
@@ -155,9 +121,10 @@
     let mediaRecorder;
     let audioChunks = [];
     let micStream;
+    let isRecording = false;
 
     function append(msg) {
-      log.innerHTML += "<div>" + msg + "</div>";
+      log.innerHTML += `<div>${msg}</div>`;
       log.scrollTop = log.scrollHeight;
     }
 
@@ -187,6 +154,8 @@
     }
 
     async function startRecording() {
+      if (isRecording) return;
+      isRecording = true;
       try {
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
@@ -195,6 +164,7 @@
         mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
         mediaRecorder.onstop = async () => {
+          isRecording = false;
           append("🛑 Aufnahme gestoppt.");
           blinker.style.display = "none";
           listeningText.setAttribute("visible", false);
@@ -230,6 +200,7 @@
         listeningText.setAttribute("visible", true);
         append("🎙️ Aufnahme läuft...");
       } catch (err) {
+        isRecording = false;
         console.error("Mikrofon-Fehler:", err);
       }
     }
@@ -240,38 +211,22 @@
       }
     }
 
-    // Maussteuerung
     recordButton.addEventListener("mousedown", startRecording);
     recordButton.addEventListener("mouseup", stopRecording);
     recordButton.addEventListener("mouseleave", stopRecording);
-
-    // VR-Controller-Click (Raycaster/Trigger)
     recordButton.addEventListener("click", () => {
-      console.log("🎯 Klick (Controller oder Gaze) erkannt");
+      console.log("🎯 Klick erkannt");
       startRecording();
-      setTimeout(stopRecording, 3000); // Optional: automatische Aufnahmezeit
+      setTimeout(stopRecording, 3000);
     });
 
-    // Moduswechsel
-    document.getElementById("start-vr").onclick = () => {
-      document.querySelector("a-scene").enterVR();
-    };
-
-    document.getElementById("start-ar").onclick = () => {
-      const sceneEl = document.querySelector("a-scene");
-      sceneEl.enterAR();
-
-      const camera = document.querySelector("a-camera");
-      const cameraObj = camera.object3D;
-      const camWorldPos = new AFRAME.THREE.Vector3();
-      cameraObj.getWorldPosition(camWorldPos);
-
-      const forward = new AFRAME.THREE.Vector3(0, 0, -1).applyQuaternion(cameraObj.quaternion);
-      const targetPos = camWorldPos.clone().add(forward.multiplyScalar(2));
-
-      lucy.setAttribute("position", `${targetPos.x} ${targetPos.y - 1.6} ${targetPos.z}`);
-    };
+    // Lucy-Größe dynamisch je nach VR/Web
+    AFRAME.scenes[0].addEventListener("enter-vr", () => {
+      lucy.setAttribute("scale", "0.5 0.5 0.5");
+    });
+    AFRAME.scenes[0].addEventListener("exit-vr", () => {
+      lucy.setAttribute("scale", "1.5 1.5 1.5");
+    });
   </script>
 </body>
 </html>
-
