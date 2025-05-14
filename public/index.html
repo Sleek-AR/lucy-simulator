@@ -38,40 +38,10 @@
       50% { opacity: 0; }
       100% { opacity: 1; }
     }
-    #mode-buttons {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      gap: 10px;
-    }
-    #mode-buttons button {
-      background: white;
-      border: 2px solid #444;
-      color: #222;
-      font-weight: bold;
-      padding: 10px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    #mode-buttons button:hover {
-      background: #e0f0ff;
-      border-color: #00bfff;
-      color: #00bfff;
-    }
   </style>
 </head>
 <body>
   <div class="blinker" id="blinker"></div>
-
-  <div id="mode-buttons">
-    <button id="start-ar">AR</button>
-    <button id="start-vr">VR</button>
-  </div>
 
   <a-scene xr-compatible vr-mode-ui="enabled: true" background="color: #ECECEC">
     <a-assets>
@@ -79,15 +49,15 @@
     </a-assets>
 
     <a-light type="ambient" intensity="1.0"></a-light>
-
     <a-sky color="#dfe9f3"></a-sky>
     <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-    <!-- Kamera + Cursor -->
-    <a-entity id="cameraRig">
+    <!-- Bewegliches Kamerarig -->
+    <a-entity id="cameraRig" movement-controls="fly: false">
       <a-camera position="0 1.6 0"
                 raycaster="objects: .clickable"
-                cursor="rayOrigin: mouse">
+                cursor="rayOrigin: mouse"
+                look-controls>
         <a-entity cursor="rayOrigin: mouse"
                   geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
                   material="color: black; shader: flat"
@@ -100,12 +70,12 @@
     <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
 
-    <!-- Lucy -->
+    <!-- Lucy in realistischer Größe -->
     <a-entity id="lucy"
               gltf-model="#lucyModel"
               position="0 0 -2"
-              scale="1.0 1.0 1.0"
-              animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak">
+              scale="0.5 0.5 0.5"
+              animation__speak="property: scale; to: 0.55 0.45 0.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak">
     </a-entity>
 
     <a-entity id="thinkingText"
@@ -249,28 +219,8 @@
     recordButton.addEventListener("click", () => {
       console.log("🎯 Klick (Controller oder Gaze) erkannt");
       startRecording();
-      setTimeout(stopRecording, 3000); // Optional: automatische Aufnahmezeit
+      setTimeout(stopRecording, 3000);
     });
-
-    // Moduswechsel
-    document.getElementById("start-vr").onclick = () => {
-      document.querySelector("a-scene").enterVR();
-    };
-
-    document.getElementById("start-ar").onclick = () => {
-      const sceneEl = document.querySelector("a-scene");
-      sceneEl.enterAR();
-
-      const camera = document.querySelector("a-camera");
-      const cameraObj = camera.object3D;
-      const camWorldPos = new AFRAME.THREE.Vector3();
-      cameraObj.getWorldPosition(camWorldPos);
-
-      const forward = new AFRAME.THREE.Vector3(0, 0, -1).applyQuaternion(cameraObj.quaternion);
-      const targetPos = camWorldPos.clone().add(forward.multiplyScalar(2));
-
-      lucy.setAttribute("position", `${targetPos.x} ${targetPos.y - 1.6} ${targetPos.z}`);
-    };
   </script>
 </body>
 </html>
