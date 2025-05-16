@@ -21,17 +21,6 @@
       padding: 10px;
       font-size: 14px;
     }
-    #role-select {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 9999;
-      background: white;
-      border: 1px solid #ccc;
-      padding: 6px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
     .blinker {
       position: absolute;
       top: 10px;
@@ -49,20 +38,24 @@
       50% { opacity: 0; }
       100% { opacity: 1; }
     }
+    #roleSelect {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 9999;
+      font-size: 16px;
+      padding: 4px;
+    }
   </style>
 </head>
 <body>
-  <div id="role-select">
-    <label for="role">Rolle:</label>
-    <select id="role">
-      <option value="lucy" selected>Lucy Recruiter</option>
-      <option value="lucy_bewerberin">Lucy Bewerberin</option>
-      <option value="konflikt">Konflikttraining</option>
-      <option value="telefon">Telefontraining</option>
-    </select>
-  </div>
-
   <div class="blinker" id="blinker"></div>
+  <select id="roleSelect">
+    <option value="recruiter">Lucy Recruiter</option>
+    <option value="bewerberin">Lucy Bewerberin</option>
+    <option value="konflikt">Konflikttraining</option>
+    <option value="telefon">Telefontraining</option>
+  </select>
 
   <a-scene xr-compatible vr-mode-ui="enabled: true" background="color: #ECECEC">
     <a-assets>
@@ -100,6 +93,14 @@
               position="0 0 -6"
               scale="0.7 0.7 0.7"
               rotation="0 0 0">
+    </a-entity>
+
+    <a-entity geometry="primitive: plane; height: 0.4; width: 2.4"
+              material="color: #fff; opacity: 0.9"
+              position="0 2.4 -2.5">
+      <a-entity id="vrRoleLabel" text="value: Rolle wählen:
+Lucy Recruiter | Lucy Bewerberin | Konflikt | Telefon; align: center; color: #333"
+                position="0 0 0.01" scale="0.5 0.5 0.5"></a-entity>
     </a-entity>
 
     <a-entity id="thinkingText"
@@ -144,17 +145,12 @@
     const recordButton = document.getElementById("recordButton");
     const thinkingText = document.getElementById("thinkingText");
     const listeningText = document.getElementById("listeningText");
-    const roleSelect = document.getElementById("role");
+    const roleSelect = document.getElementById("roleSelect");
 
     let mediaRecorder;
     let audioChunks = [];
     let micStream;
     let isRecording = false;
-    let selectedRole = roleSelect.value;
-
-    roleSelect.addEventListener("change", () => {
-      selectedRole = roleSelect.value;
-    });
 
     function append(msg) {
       log.innerHTML += `<div>${msg}</div>`;
@@ -211,7 +207,8 @@
           thinkingText.setAttribute("visible", true);
 
           try {
-            const res = await fetch(`/upload-audio?role=${selectedRole}`, {
+            const role = roleSelect.value || "recruiter";
+            const res = await fetch(`/upload-audio?role=${role}`, {
               method: "POST",
               body: formData
             });
@@ -244,13 +241,16 @@
       }
     }
 
+    // Web Maus halten
     recordButton.addEventListener("mousedown", startRecording);
     recordButton.addEventListener("mouseup", stopRecording);
     recordButton.addEventListener("mouseleave", stopRecording);
 
+    // VR Controller halten
     recordButton.addEventListener("triggerdown", startRecording);
     recordButton.addEventListener("triggerup", stopRecording);
 
+    // Web: Leertaste gedrückt halten
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
         startRecording();
@@ -262,6 +262,7 @@
       }
     });
 
+    // Größe von Lucy je nach Modus
     AFRAME.scenes[0].addEventListener("enter-vr", () => {
       lucy.setAttribute("scale", "0.5 0.5 0.5");
     });
