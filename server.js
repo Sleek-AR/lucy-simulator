@@ -1,4 +1,4 @@
-// ✅ server.js (mit Whisper, GPT und OpenAI TTS)
+// ✅ server.js (mit Whisper, GPT, TTS und dynamischen Prompts)
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
@@ -15,7 +15,22 @@ app.use(express.json());
 const upload = multer({ dest: 'uploads/' });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 🧠 Prompt-Ladefunktion
+function loadPrompt(role = "lucy") {
+  try {
+    const filePath = path.join(__dirname, "prompts", `${role}.txt`);
+    return fs.readFileSync(filePath, "utf-8");
+  } catch {
+    console.warn(`⚠️ Prompt "${role}" nicht gefunden. Fallback auf "lucy.txt"`);
+    return fs.readFileSync(path.join(__dirname, "prompts", "lucy.txt"), "utf-8");
+  }
+}
+
+// 🎙 Spracheingabe-Upload + GPT-Antwort
 app.post('/upload-audio', upload.single('audio'), async (req, res) => {
+  const role = req.query.role || "lucy"; // z. B. /upload-audio?role=konflikt
   const inputPath = req.file.path;
   const outputPath = `uploads/${uuidv4()}.mp3`;
 
@@ -34,13 +49,14 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
     });
 
     const userText = transcription.text;
+    const promptText = loadPrompt(role);
 
     const gptResponse = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
           role: 'system',
-          content: `Du bist Lucy, die Personalleiterin von Spar, und führst ein Bewerbungsgespräch für die Lehrstelle zur Bürokauffrau bzw. zum Bürokaufmann durch. ... [gekürzt für Klarheit, bitte vollständig einsetzen]`
+          content: promptText
         },
         {
           role: 'user',
@@ -54,12 +70,12 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
 
     res.json({ response: gptResponse.choices[0].message.content });
   } catch (error) {
-    console.error('Fehler bei /upload-audio:', error);
+    console.error('❌ Fehler bei /upload-audio:', error);
     res.status(500).json({ error: error.message || 'Verarbeitungsfehler' });
   }
 });
 
-// 🔊 OpenAI TTS
+// 🔊 TTS-Ausgabe
 app.post('/tts', async (req, res) => {
   const { text } = req.body;
   try {
@@ -72,13 +88,11 @@ app.post('/tts', async (req, res) => {
     res.setHeader('Content-Type', 'audio/mpeg');
     ttsResponse.body.pipe(res);
   } catch (error) {
-    console.error('Fehler bei /tts:', error);
+    console.error('❌ Fehler bei /tts:', error);
     res.status(500).json({ error: 'TTS fehlgeschlagen' });
   }
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.listen(port, () => {
-  console.log(`🎧 Server läuft auf http://localhost:${port}`);
+  console.log(`🚀 Server läuft auf http://localhost:${port}`);
 });
