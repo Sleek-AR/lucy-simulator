@@ -15,6 +15,22 @@
           this.el.setAttribute("wasd-controls-enabled", false);
         },
       });
+
+      AFRAME.registerComponent("move-rig-with-thumbstick", {
+        schema: { speed: { type: "number", default: 0.1 } },
+        init: function () {
+          this.rig = document.querySelector("#rig");
+          this.camera = document.querySelector("#camera");
+          this.direction = new THREE.Vector3();
+          this.el.addEventListener("thumbstickmoved", (e) => {
+            this.direction.set(e.detail.x, 0, e.detail.y);
+            this.direction.multiplyScalar(this.data.speed);
+            const camQuat = this.camera.object3D.quaternion;
+            this.direction.applyQuaternion(camQuat);
+            this.rig.object3D.position.add(this.direction);
+          });
+        }
+      });
     </script>
 
     <style>
