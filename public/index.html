@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Lucy Bewerbungssimulator</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
     <script>
       AFRAME.registerComponent("enable-controls", {
@@ -95,10 +95,11 @@
       <a-sky color="#dfe9f3"></a-sky>
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
+      <!-- Kamera -->
       <a-entity
         id="cameraRig"
-        enable-controls
-        universal-controls
+        movement-controls="speed: 0.1"
+        meta-touch-controls
         position="0 0 0"
       >
         <a-camera raycaster="objects: .clickable" cursor="rayOrigin: entity">
@@ -106,7 +107,6 @@
             cursor
             geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
             material="color: black; shader: flat"
-            position="0 0 -1"
           >
           </a-entity>
         </a-camera>
@@ -123,6 +123,7 @@
         line="color: #00BFFF"
       ></a-entity>
 
+      <!-- Lucy-->
       <a-entity
         id="lucy"
         gltf-model="#lucyModel"
