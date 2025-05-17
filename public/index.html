@@ -19,7 +19,7 @@
       AFRAME.registerComponent("move-rig-with-thumbstick", {
         schema: { speed: { type: "number", default: 0.1 } },
         init: function () {
-          this.rig = document.querySelector("#rig");
+          this.rig = document.querySelector("#cameraRig");
           this.camera = document.querySelector("#camera");
           this.direction = new THREE.Vector3();
           this.el.addEventListener("thumbstickmoved", (e) => {
@@ -29,7 +29,7 @@
             this.direction.applyQuaternion(camQuat);
             this.rig.object3D.position.add(this.direction);
           });
-        }
+        },
       });
     </script>
 
@@ -90,7 +90,6 @@
       <option value="konflikt">Konflikttraining</option>
       <option value="telefon">Telefontraining</option>
     </select>
-
     <a-scene
       xr-compatible
       vr-mode-ui="enabled: true"
@@ -111,14 +110,10 @@
       <a-sky color="#dfe9f3"></a-sky>
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-      <!-- Kamera -->
-      <a-entity
-        id="cameraRig"
-        movement-controls="speed: 0.1"
-        gamepad-controls
-        position="0 0 0"
-      >
+      <!-- KameraRig inkl. Kamera & Controller -->
+      <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0 0">
         <a-camera
+          id="camera"
           wasd-controls-enabled="false"
           raycaster="objects: .clickable"
           cursor="rayOrigin: entity"
@@ -130,37 +125,39 @@
             position="0 0 -1"
           ></a-entity>
         </a-camera>
+
+        <!-- Controller bewegen sich mit -->
+        <a-entity
+          laser-controls="hand: left"
+          raycaster="objects: .clickable"
+          line="color: #00BFFF"
+          move-rig-with-thumbstick
+        ></a-entity>
+        <a-entity
+          laser-controls="hand: right"
+          raycaster="objects: .clickable"
+          line="color: #00BFFF"
+          move-rig-with-thumbstick
+        ></a-entity>
       </a-entity>
-
-      <a-entity
-        laser-controls="hand: left"
-        raycaster="objects: .clickable"
-        line="color: #00BFFF"
-      ></a-entity>
-      <a-entity
-        laser-controls="hand: right"
-        raycaster="objects: .clickable"
-        line="color: #00BFFF"
-      ></a-entity>
-
-      <!-- Lucy-->
+      <!-- Lucy -->
       <a-entity
         id="lucy"
         gltf-model="#lucyModel"
         position="0 0 -2"
         scale="1.5 1.5 1.5"
         animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
-      >
-      </a-entity>
+      ></a-entity>
 
+      <!-- Office -->
       <a-entity
         gltf-model="#officeSet"
         position="-3 0 -6"
         scale="0.7 0.7 0.7"
         rotation="0 0 0"
-      >
-      </a-entity>
+      ></a-entity>
 
+      <!-- Denktext -->
       <a-entity
         id="thinkingText"
         text="value: Lucy denkt nach...; align: center; color: #555"
@@ -174,10 +171,10 @@
           dur="1000"
           direction="alternate"
           repeat="indefinite"
-        >
-        </a-animation>
+        ></a-animation>
       </a-entity>
 
+      <!-- Hörtext -->
       <a-entity
         id="listeningText"
         text="value: Lucy nimmt dich gerade wahr...; align: center; color: #f00"
@@ -191,10 +188,10 @@
           dur="1000"
           direction="alternate"
           repeat="indefinite"
-        >
-        </a-animation>
+        ></a-animation>
       </a-entity>
 
+      <!-- Aufnahmebutton -->
       <a-entity
         id="recordButton"
         geometry="primitive: plane; height: 0.3; width: 1.4"
@@ -202,9 +199,7 @@
         position="0 1 -1.5"
         text="value: 🎙 Leertaste oder Trigger halten; align: center"
         class="clickable"
-      >
-      </a-entity>
-
+      ></a-entity>
       <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
         <a-plane
@@ -406,28 +401,22 @@
         }
       }
 
-      // Web Maus halten
+      // Web: Maus & Trigger halten
       recordButton.addEventListener("mousedown", startRecording);
       recordButton.addEventListener("mouseup", stopRecording);
       recordButton.addEventListener("mouseleave", stopRecording);
-
-      // VR Controller halten
       recordButton.addEventListener("triggerdown", startRecording);
       recordButton.addEventListener("triggerup", stopRecording);
 
-      // Web: Leertaste gedrückt halten
+      // Web: Leertaste
       document.addEventListener("keydown", (e) => {
-        if (e.code === "Space") {
-          startRecording();
-        }
+        if (e.code === "Space") startRecording();
       });
       document.addEventListener("keyup", (e) => {
-        if (e.code === "Space") {
-          stopRecording();
-        }
+        if (e.code === "Space") stopRecording();
       });
 
-      // Größe von Lucy je nach Modus
+      // VR: Lucy kleiner machen
       AFRAME.scenes[0].addEventListener("enter-vr", () => {
         lucy.setAttribute("scale", "0.5 0.5 0.5");
       });
@@ -435,7 +424,7 @@
         lucy.setAttribute("scale", "1.5 1.5 1.5");
       });
 
-      // Rolle setzen via Raum-Menü
+      // Rollenauswahl aus Menü
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
