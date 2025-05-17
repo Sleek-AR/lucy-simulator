@@ -31,6 +31,20 @@
           });
         },
       });
+
+      // Bewegung per Tastatur nur in Webmodus aktivieren
+      window.addEventListener("DOMContentLoaded", () => {
+        const scene = document.querySelector("a-scene");
+        const camera = document.getElementById("camera");
+
+        scene.addEventListener("enter-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", false);
+        });
+
+        scene.addEventListener("exit-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", true);
+        });
+      });
     </script>
 
     <style>
@@ -114,7 +128,7 @@
       <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0 0">
         <a-camera
           id="camera"
-          wasd-controls-enabled="false"
+          wasd-controls-enabled="true"
           raycaster="objects: .clickable"
           cursor="rayOrigin: entity"
         >
@@ -140,7 +154,7 @@
           move-rig-with-thumbstick
         ></a-entity>
       </a-entity>
-      
+
       <!-- Lucy -->
       <a-entity
         id="lucy"
@@ -201,7 +215,7 @@
         text="value: 🎙 Leertaste oder Trigger halten; align: center"
         class="clickable"
       ></a-entity>
-      
+
       <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
         <a-plane
@@ -290,6 +304,32 @@
             width="1.2"
             position="0 0 0.01"
           ></a-text>
+        </a-entity>
+
+        <!-- Vereinfachter Anruf-Button -->
+        <a-entity
+          id="simpleCallButton"
+          class="clickable"
+          position="-2 0 2"
+          visible="false"
+        >
+          <a-plane
+            width="1.8"
+            height="0.4"
+            color="#28a745"
+            material="shader: flat"
+            geometry="primitive: plane"
+            event-set__enter="_event: mouseenter; material.color: #218838"
+            event-set__leave="_event: mouseleave; material.color: #28a745"
+          >
+            <a-text
+              value="📞 +43 660 3262626 anrufen"
+              align="center"
+              color="#ffffff"
+              width="2.5"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
         </a-entity>
       </a-entity>
     </a-scene>
@@ -430,7 +470,40 @@
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
+
+        const isPhoneMode = role === "telefon";
+
+        // Nur im Telefonmodus wird der Button sichtbar, Lucy wird ausgeblendet
+        document
+          .getElementById("simpleCallButton")
+          .setAttribute("visible", isPhoneMode);
+        document.getElementById("lucy").setAttribute("visible", !isPhoneMode);
       }
+
+      // 📞 Klingelton abspielen
+      function playRingtone() {
+        return new Promise((resolve) => {
+          const audio = new Audio("/sounds/ringtone-126505.mp3"); // Pfad ggf. anpassen
+          audio.play();
+          setTimeout(() => {
+            audio.pause();
+            resolve();
+          }, 3000);
+        });
+      }
+
+      // 📞 Button-Logik
+      document
+        .getElementById("simpleCallButton")
+        .addEventListener("click", () => {
+          append("📞 Wähle: +43 660 3262626");
+          playRingtone().then(() => {
+            append("✅ Verbindung aufgebaut!");
+            speak(
+              "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
+            );
+          });
+        });
     </script>
   </body>
 </html>
