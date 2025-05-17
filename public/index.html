@@ -161,6 +161,7 @@
         gltf-model="#lucyModel"
         position="0 0 -2"
         scale="1.5 1.5 1.5"
+        visible="true"
         animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
       ></a-entity>
 
@@ -472,12 +473,20 @@
         append(`🎭 Rolle geändert: ${role}`);
 
         const isPhoneMode = role === "telefon";
+        const callBtn = document.getElementById("simpleCallButton");
+        const lucyEl = document.getElementById("lucy");
 
-        // Nur im Telefonmodus wird der Button sichtbar, Lucy wird ausgeblendet
-        document
-          .getElementById("simpleCallButton")
-          .setAttribute("visible", isPhoneMode);
-        document.getElementById("lucy").setAttribute("visible", !isPhoneMode);
+        // Sichere Steuerung mit Timeout-Fallback für VR
+        if (isPhoneMode) {
+          callBtn.setAttribute("visible", true);
+          lucyEl.setAttribute("visible", false);
+          // zusätzlich skaliere Lucy auf 0 (VR-Fallback)
+          lucyEl.setAttribute("scale", "0 0 0");
+        } else {
+          callBtn.setAttribute("visible", false);
+          lucyEl.setAttribute("visible", true);
+          lucyEl.setAttribute("scale", "1.5 1.5 1.5");
+        }
       }
 
       // 📞 Klingelton abspielen
