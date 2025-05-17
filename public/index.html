@@ -140,18 +140,20 @@
 
         <!-- Controller bewegen sich mit -->
         <a-entity
-          laser-controls="hand: left"
-          raycaster="objects: .clickable"
-          line="color: #00BFFF"
-          move-rig-with-thumbstick
+         laser-controls="hand: left"
+         raycaster="objects: .clickable, .key"
+          cursor="fuse: false"
+         line="color: #00BFFF"
+         move-rig-with-thumbstick
         ></a-entity>
+
         <a-entity
           laser-controls="hand: right"
-          raycaster="objects: .clickable"
+          raycaster="objects: .clickable, .key"
+          cursor="fuse: false"
           line="color: #00BFFF"
           move-rig-with-thumbstick
         ></a-entity>
-      </a-entity>
 
       <!-- Lucy -->
       <a-entity
