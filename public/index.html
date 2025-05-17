@@ -31,6 +31,19 @@
           });
         },
       });
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const scene = document.querySelector("a-scene");
+        const camera = document.getElementById("camera");
+
+        scene.addEventListener("enter-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", false);
+        });
+
+        scene.addEventListener("exit-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", true);
+        });
+      });
     </script>
 
     <style>
@@ -114,7 +127,6 @@
       <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0 0">
         <a-camera
           id="camera"
-          wasd-controls-enabled="false"
           raycaster="objects: .clickable"
           cursor="rayOrigin: entity"
         >
