@@ -99,21 +99,22 @@
       <a-entity
         id="cameraRig"
         movement-controls="speed: 0.1"
+        gamepad-controls
         position="0 0 0"
       >
-        <a-camera raycaster="objects: .clickable" cursor="rayOrigin: entity">
+        <a-camera
+          wasd-controls-enabled="false"
+          raycaster="objects: .clickable"
+          cursor="rayOrigin: entity"
+        >
           <a-entity
             cursor
             geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
             material="color: black; shader: flat"
-          >
-          </a-entity>
+            position="0 0 -1"
+          ></a-entity>
         </a-camera>
       </a-entity>
-
-      <!-- Separat platzierte Controller für Bewegung -->
-      <a-entity meta-touch-controls="hand: left"></a-entity>
-      <a-entity meta-touch-controls="hand: right"></a-entity>
 
       <a-entity
         laser-controls="hand: left"
