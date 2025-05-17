@@ -1,274 +1,412 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <title>Lucy Bewerbungssimulator</title>
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-  <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      overflow: hidden;
-    }
-    #log {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      max-height: 150px;
-      overflow-y: auto;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 10px;
-      font-size: 14px;
-    }
-    .blinker {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 15px;
-      height: 15px;
-      background-color: red;
-      border-radius: 50%;
-      animation: blink 1s infinite;
-      z-index: 9999;
-      display: none;
-    }
-    @keyframes blink {
-      0% { opacity: 1; }
-      50% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-    #roleSelect {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 9999;
-      font-size: 16px;
-      padding: 4px;
-    }
-  </style>
-</head>
-<body>
-  <div class="blinker" id="blinker"></div>
-  <select id="roleSelect">
-    <option value="recruiter">Lucy Recruiter</option>
-    <option value="bewerberin">Lucy Bewerberin</option>
-    <option value="konflikt">Konflikttraining</option>
-    <option value="telefon">Telefontraining</option>
-  </select>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lucy Bewerbungssimulator</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        overflow: hidden;
+      }
+      #log {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        max-height: 150px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px;
+        font-size: 14px;
+      }
+      .blinker {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
+        background-color: red;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+        z-index: 9999;
+        display: none;
+      }
+      @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      #roleSelect {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 9999;
+        font-size: 16px;
+        padding: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blinker" id="blinker"></div>
+    <select id="roleSelect">
+      <option value="recruiter">Lucy Recruiter</option>
+      <option value="bewerberin">Lucy Bewerberin</option>
+      <option value="konflikt">Konflikttraining</option>
+      <option value="telefon">Telefontraining</option>
+    </select>
 
-  <a-scene xr-compatible vr-mode-ui="enabled: true" background="color: #ECECEC">
-    <a-assets>
-      <a-asset-item id="lucyModel" src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"></a-asset-item>
-      <a-asset-item id="officeSet" src="https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/icons8_high_chairs_blackboard_round_table.glb"></a-asset-item>
-    </a-assets>
+    <a-scene
+      xr-compatible
+      vr-mode-ui="enabled: true"
+      background="color: #ECECEC"
+    >
+      <a-assets>
+        <a-asset-item
+          id="lucyModel"
+          src="https://models.readyplayer.me/6823269dbdbf61e0facd5a12.glb"
+        ></a-asset-item>
+        <a-asset-item
+          id="officeSet"
+          src="https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/icons8_high_chairs_blackboard_round_table.glb"
+        ></a-asset-item>
+      </a-assets>
 
-    <a-light type="ambient" intensity="1.0"></a-light>
-    <a-sky color="#dfe9f3"></a-sky>
-    <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
+      <a-light type="ambient" intensity="1.0"></a-light>
+      <a-sky color="#dfe9f3"></a-sky>
+      <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-    <a-entity id="cameraRig">
-      <a-camera position="0 1.9 0"
-                raycaster="objects: .clickable"
-                cursor="rayOrigin: entity">
-        <a-entity cursor
-                  geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
-                  material="color: black; shader: flat"
-                  position="0 0 -1">
+      <a-entity id="cameraRig">
+        <a-camera
+          position="0 1.9 0"
+          raycaster="objects: .clickable"
+          cursor="rayOrigin: entity"
+        >
+          <a-entity
+            cursor
+            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+            material="color: black; shader: flat"
+            position="0 0 -1"
+          >
+          </a-entity>
+        </a-camera>
+      </a-entity>
+
+      <a-entity
+        laser-controls="hand: left"
+        raycaster="objects: .clickable"
+        line="color: #00BFFF"
+      ></a-entity>
+      <a-entity
+        laser-controls="hand: right"
+        raycaster="objects: .clickable"
+        line="color: #00BFFF"
+      ></a-entity>
+
+      <a-entity
+        id="lucy"
+        gltf-model="#lucyModel"
+        position="0 0 -2"
+        scale="1.5 1.5 1.5"
+        animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
+      >
+      </a-entity>
+
+      <a-entity
+        gltf-model="#officeSet"
+        position="-3 0 -6"
+        scale="0.7 0.7 0.7"
+        rotation="0 0 0"
+      >
+      </a-entity>
+
+      <a-entity
+        id="thinkingText"
+        text="value: Lucy denkt nach...; align: center; color: #555"
+        position="0 3.2 -2"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        >
+        </a-animation>
+      </a-entity>
+
+      <a-entity
+        id="listeningText"
+        text="value: Lucy hö
+        rt zu...; align: center; color: #f00"
+        position="0 2.9 -2"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        >
+        </a-animation>
+      </a-entity>
+
+      <a-entity
+        id="recordButton"
+        geometry="primitive: plane; height: 0.3; width: 1.4"
+        material="color: #00BFFF"
+        position="0 1 -1.5"
+        text="value: 🎙 Leertaste oder Trigger halten; align: center"
+        class="clickable"
+      >
+      </a-entity>
+
+      <!-- 🔽 Raum-UI-Menü für VR -->
+      <a-entity id="vrMenu" position="2 1.5 -6">
+        <a-plane
+          width="1.8"
+          height="1.8"
+          color="#ffffff"
+          opacity="0.95"
+          material="shader: flat"
+          position="0 0 0"
+        ></a-plane>
+        <a-text
+          value="Lucy Rolle wählen:"
+          align="center"
+          color="#000"
+          width="2"
+          position="0 0.45 0.01"
+        ></a-text>
+
+        <a-entity
+          class="clickable"
+          geometry="primitive: plane; height: 0.25; width: 1.5"
+          material="color: #00BFFF"
+          position="0 0.2 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
+          onclick="setRole('recruiter')"
+        >
+          <a-text
+            value="Lucy Recruiter"
+            align="center"
+            color="#fff"
+            width="1.2"
+            position="0 0 0.01"
+          ></a-text>
         </a-entity>
-      </a-camera>
-    </a-entity>
 
-    <a-entity laser-controls="hand: left" raycaster="objects: .clickable" line="color: #00BFFF"></a-entity>
-    <a-entity laser-controls="hand: right" raycaster="objects: .clickable" line="color: #00BFFF"></a-entity>
+        <a-entity
+          class="clickable"
+          geometry="primitive: plane; height: 0.25; width: 1.5"
+          material="color: #00BFFF"
+          position="0 -0.1 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
+          onclick="setRole('bewerberin')"
+        >
+          <a-text
+            value="Lucy Bewerberin"
+            align="center"
+            color="#fff"
+            width="1.2"
+            position="0 0 0.01"
+          ></a-text>
+        </a-entity>
 
-    <a-entity id="lucy"
-              gltf-model="#lucyModel"
-              position="0 0 -2"
-              scale="1.5 1.5 1.5"
-              animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak">
-    </a-entity>
+        <a-entity
+          class="clickable"
+          geometry="primitive: plane; height: 0.25; width: 1.5"
+          material="color: #00BFFF"
+          position="0 -0.4 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
+          onclick="setRole('konflikt')"
+        >
+          <a-text
+            value="Konflikttraining"
+            align="center"
+            color="#fff"
+            width="1.2"
+            position="0 0 0.01"
+          ></a-text>
+        </a-entity>
 
-    <a-entity gltf-model="#officeSet"
-              position="-3 0 -6"
-              scale="0.7 0.7 0.7"
-              rotation="0 0 0">
-    </a-entity>
+        <a-entity
+          class="clickable"
+          geometry="primitive: plane; height: 0.25; width: 1.5"
+          material="color: #00BFFF"
+          position="0 -0.7 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
+          onclick="setRole('telefon')"
+        >
+          <a-text
+            value="Telefontraining"
+            align="center"
+            color="#fff"
+            width="1.2"
+            position="0 0 0.01"
+          ></a-text>
+        </a-entity>
+      </a-entity>
+    </a-scene>
 
-    <a-entity geometry="primitive: plane; height: 0.4; width: 2.4"
-              material="color: #fff; opacity: 0.9"
-              position="0 2.4 -2.5">
-      <a-entity id="vrRoleLabel" text="value: Rolle wählen:
-Lucy Recruiter | Lucy Bewerberin | Konflikt | Telefon; align: center; color: #333"
-                position="0 0 0.01" scale="0.5 0.5 0.5"></a-entity>
-    </a-entity>
+    <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
-    <a-entity id="thinkingText"
-              text="value: Lucy denkt nach...; align: center; color: #555"
-              position="0 3.2 -2"
-              visible="false">
-      <a-animation attribute="material.opacity"
-                   from="0.3" to="1"
-                   dur="1000"
-                   direction="alternate"
-                   repeat="indefinite">
-      </a-animation>
-    </a-entity>
+    <script>
+      const log = document.getElementById("log");
+      const blinker = document.getElementById("blinker");
+      const lucy = document.getElementById("lucy");
+      const recordButton = document.getElementById("recordButton");
+      const thinkingText = document.getElementById("thinkingText");
+      const listeningText = document.getElementById("listeningText");
+      const roleSelect = document.getElementById("roleSelect");
 
-    <a-entity id="listeningText"
-              text="value: Lucy hört zu...; align: center; color: #f00"
-              position="0 2.9 -2"
-              visible="false">
-      <a-animation attribute="material.opacity"
-                   from="0.3" to="1"
-                   dur="1000"
-                   direction="alternate"
-                   repeat="indefinite">
-      </a-animation>
-    </a-entity>
+      let mediaRecorder;
+      let audioChunks = [];
+      let micStream;
+      let isRecording = false;
 
-    <a-entity id="recordButton"
-              geometry="primitive: plane; height: 0.3; width: 1.4"
-              material="color: #00BFFF"
-              position="0 1 -1.5"
-              text="value: 🎙 Leertaste oder Trigger halten; align: center"
-              class="clickable">
-    </a-entity>
-  </a-scene>
-
-  <div id="log">💬 Lucy wartet auf deine Stimme...</div>
-
-  <script>
-    const log = document.getElementById("log");
-    const blinker = document.getElementById("blinker");
-    const lucy = document.getElementById("lucy");
-    const recordButton = document.getElementById("recordButton");
-    const thinkingText = document.getElementById("thinkingText");
-    const listeningText = document.getElementById("listeningText");
-    const roleSelect = document.getElementById("roleSelect");
-
-    let mediaRecorder;
-    let audioChunks = [];
-    let micStream;
-    let isRecording = false;
-
-    function append(msg) {
-      log.innerHTML += `<div>${msg}</div>`;
-      log.scrollTop = log.scrollHeight;
-    }
-
-    async function playVoiceFromText(text) {
-      try {
-        const response = await fetch("/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
-        });
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        lucy.emit("speak");
-        thinkingText.setAttribute("visible", false);
-        audio.play();
-        audio.onended = () => lucy.emit("stopspeak");
-      } catch (error) {
-        console.error("TTS-Fehler:", error);
-        append("⚠️ Konnte Antwort nicht abspielen.");
-        thinkingText.setAttribute("visible", false);
+      function append(msg) {
+        log.innerHTML += `<div>${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
       }
-    }
 
-    function speak(text) {
-      playVoiceFromText(text);
-    }
+      async function playVoiceFromText(text) {
+        try {
+          const response = await fetch("/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          lucy.emit("speak");
+          thinkingText.setAttribute("visible", false);
+          audio.play();
+          audio.onended = () => lucy.emit("stopspeak");
+        } catch (error) {
+          console.error("TTS-Fehler:", error);
+          append("⚠️ Konnte Antwort nicht abspielen.");
+          thinkingText.setAttribute("visible", false);
+        }
+      }
 
-    async function startRecording() {
-      if (isRecording) return;
-      isRecording = true;
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
-        audioChunks = [];
+      function speak(text) {
+        playVoiceFromText(text);
+      }
 
-        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+      async function startRecording() {
+        if (isRecording) return;
+        isRecording = true;
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(micStream, {
+            mimeType: "audio/webm",
+          });
+          audioChunks = [];
 
-        mediaRecorder.onstop = async () => {
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+          mediaRecorder.onstop = async () => {
+            isRecording = false;
+            append("🛑 Aufnahme gestoppt.");
+            blinker.style.display = "none";
+            listeningText.setAttribute("visible", false);
+            if (micStream) micStream.getTracks().forEach((t) => t.stop());
+
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "speech.webm");
+
+            append("⏳ Sende Audio an Server...");
+            thinkingText.setAttribute("visible", true);
+
+            try {
+              const role = roleSelect.value || "recruiter";
+              const res = await fetch(`/upload-audio?role=${role}`, {
+                method: "POST",
+                body: formData,
+              });
+
+              const data = await res.json();
+              const reply = data.response || data.error || "Fehler bei Antwort";
+
+              append("🤖 <b>Lucy:</b> " + reply);
+              speak(reply);
+            } catch (error) {
+              console.error("Upload-Fehler:", error);
+              append("❌ Fehler beim Senden oder Verarbeiten.");
+              thinkingText.setAttribute("visible", false);
+            }
+          };
+
+          mediaRecorder.start();
+          blinker.style.display = "block";
+          listeningText.setAttribute("visible", true);
+          append("🎙️ Aufnahme läuft...");
+        } catch (err) {
           isRecording = false;
-          append("🛑 Aufnahme gestoppt.");
-          blinker.style.display = "none";
-          listeningText.setAttribute("visible", false);
-          if (micStream) micStream.getTracks().forEach(t => t.stop());
-
-          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          const formData = new FormData();
-          formData.append("audio", audioBlob, "speech.webm");
-
-          append("⏳ Sende Audio an Server...");
-          thinkingText.setAttribute("visible", true);
-
-          try {
-            const role = roleSelect.value || "recruiter";
-            const res = await fetch(`/upload-audio?role=${role}`, {
-              method: "POST",
-              body: formData
-            });
-
-            const data = await res.json();
-            const reply = data.response || data.error || "Fehler bei Antwort";
-
-            append("🤖 <b>Lucy:</b> " + reply);
-            speak(reply);
-          } catch (error) {
-            console.error("Upload-Fehler:", error);
-            append("❌ Fehler beim Senden oder Verarbeiten.");
-            thinkingText.setAttribute("visible", false);
-          }
-        };
-
-        mediaRecorder.start();
-        blinker.style.display = "block";
-        listeningText.setAttribute("visible", true);
-        append("🎙️ Aufnahme läuft...");
-      } catch (err) {
-        isRecording = false;
-        console.error("Mikrofon-Fehler:", err);
+          console.error("Mikrofon-Fehler:", err);
+        }
       }
-    }
 
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
       }
-    }
 
-    // Web Maus halten
-    recordButton.addEventListener("mousedown", startRecording);
-    recordButton.addEventListener("mouseup", stopRecording);
-    recordButton.addEventListener("mouseleave", stopRecording);
+      // Web Maus halten
+      recordButton.addEventListener("mousedown", startRecording);
+      recordButton.addEventListener("mouseup", stopRecording);
+      recordButton.addEventListener("mouseleave", stopRecording);
 
-    // VR Controller halten
-    recordButton.addEventListener("triggerdown", startRecording);
-    recordButton.addEventListener("triggerup", stopRecording);
+      // VR Controller halten
+      recordButton.addEventListener("triggerdown", startRecording);
+      recordButton.addEventListener("triggerup", stopRecording);
 
-    // Web: Leertaste gedrückt halten
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        startRecording();
+      // Web: Leertaste gedrückt halten
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          startRecording();
+        }
+      });
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+          stopRecording();
+        }
+      });
+
+      // Größe von Lucy je nach Modus
+      AFRAME.scenes[0].addEventListener("enter-vr", () => {
+        lucy.setAttribute("scale", "0.5 0.5 0.5");
+      });
+      AFRAME.scenes[0].addEventListener("exit-vr", () => {
+        lucy.setAttribute("scale", "1.5 1.5 1.5");
+      });
+
+      // Rolle setzen via Raum-Menü
+      function setRole(role) {
+        roleSelect.value = role;
+        append(`🎭 Rolle geändert: ${role}`);
       }
-    });
-    document.addEventListener("keyup", (e) => {
-      if (e.code === "Space") {
-        stopRecording();
-      }
-    });
-
-    // Größe von Lucy je nach Modus
-    AFRAME.scenes[0].addEventListener("enter-vr", () => {
-      lucy.setAttribute("scale", "0.5 0.5 0.5");
-    });
-    AFRAME.scenes[0].addEventListener("exit-vr", () => {
-      lucy.setAttribute("scale", "1.5 1.5 1.5");
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
