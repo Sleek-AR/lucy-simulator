@@ -95,11 +95,13 @@
       <a-sky color="#dfe9f3"></a-sky>
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-      <a-entity id="cameraRig" enable-controls position="0 0 0">
-        <a-camera
-          raycaster="objects: .clickable"
-          cursor="rayOrigin: entity"
-        >
+      <a-entity
+        id="cameraRig"
+        enable-controls
+        universal-controls
+        position="0 0 0"
+      >
+        <a-camera raycaster="objects: .clickable" cursor="rayOrigin: entity">
           <a-entity
             cursor
             geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
