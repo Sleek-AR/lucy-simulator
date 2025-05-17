@@ -111,7 +111,7 @@
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
       <!-- KameraRig inkl. Kamera & Controller -->
-      <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 1.9 0">
+      <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0 0">
         <a-camera
           id="camera"
           wasd-controls-enabled="false"
@@ -140,6 +140,7 @@
           move-rig-with-thumbstick
         ></a-entity>
       </a-entity>
+      
       <!-- Lucy -->
       <a-entity
         id="lucy"
@@ -200,6 +201,7 @@
         text="value: 🎙 Leertaste oder Trigger halten; align: center"
         class="clickable"
       ></a-entity>
+      
       <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
         <a-plane
