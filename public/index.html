@@ -307,115 +307,260 @@
 
       <!-- 📞 Telefon-Interface -->
       <a-entity id="phoneInterface" visible="false" position="0 1.4 -2">
-        <a-plane width="1" height="0.25" color="#222" position="0 0.7 0">
+        <!-- Display -->
+        <a-plane width="1" height="0.25" color="#ccc" position="0 0.7 0.01">
           <a-text
             id="phoneDisplayText"
             value=""
             align="center"
-            color="#0f0"
-            width="1"
-            position="0 0 0.01"
+            color="#00FF00"
+            width="2.5"
+            position="0 0 0.02"
           ></a-text>
         </a-plane>
 
         <!-- Ziffernblock -->
         <a-entity id="keypad">
+          <!-- Zeilen- & Spaltenraster (3x4) -->
+          <!-- Taste 1 -->
           <a-plane
             class="key"
             position="-0.3 0.4 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 1; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="1"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 2 -->
           <a-plane
             class="key"
             position="0 0.4 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 2; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="2"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 3 -->
           <a-plane
             class="key"
             position="0.3 0.4 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 3; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="3"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 4 -->
           <a-plane
             class="key"
             position="-0.3 0.1 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 4; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="4"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 5 -->
           <a-plane
             class="key"
             position="0 0.1 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 5; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="5"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 6 -->
           <a-plane
             class="key"
             position="0.3 0.1 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 6; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="6"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 7 -->
           <a-plane
             class="key"
             position="-0.3 -0.2 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 7; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="7"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 8 -->
           <a-plane
             class="key"
             position="0 -0.2 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 8; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="8"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 9 -->
           <a-plane
             class="key"
             position="0.3 -0.2 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 9; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="9"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste * -->
           <a-plane
             class="key"
             position="-0.3 -0.5 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: *; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="*"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste 0 -->
           <a-plane
             class="key"
             position="0 -0.5 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: 0; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="0"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
+
+          <!-- Taste # -->
           <a-plane
             class="key"
             position="0.3 -0.5 0"
             width="0.25"
             height="0.25"
             color="#ccc"
-            text="value: #; align: center"
-          ></a-plane>
+            event-set__enter="_event: mouseenter; color: #00BFFF"
+            event-set__leave="_event: mouseleave; color: #ccc"
+            animation__press="_event: click; property: scale; to: 0.9 0.9 0.9; dur: 100; dir: alternate"
+          >
+            <a-text
+              value="#"
+              align="center"
+              width="4"
+              color="#000"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
         </a-entity>
 
         <!-- Anruf-Button -->
@@ -571,20 +716,30 @@
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
+
+        const isPhoneMode = role === "telefon";
+
         document
           .getElementById("phoneInterface")
-          .setAttribute("visible", role === "telefon");
+          .setAttribute("visible", isPhoneMode);
+        document.getElementById("lucy").setAttribute("visible", !isPhoneMode);
       }
+
       // 📞 Telefonnummer speichern und anzeigen
       let currentNumber = "";
 
-      document.querySelectorAll(".key").forEach((keyEl) => {
-        keyEl.addEventListener("click", () => {
-          const digit = keyEl.getAttribute("text").value;
-          currentNumber += digit;
-          document
-            .getElementById("phoneDisplayText")
-            .setAttribute("value", currentNumber);
+      AFRAME.scenes[0].addEventListener("loaded", () => {
+        document.querySelectorAll(".key").forEach((keyEl) => {
+          keyEl.addEventListener("click", () => {
+            const digitText = keyEl.querySelector("a-text"); // 👈 sicheres Auslesen des <a-text>-Kindes
+            const digit = digitText?.getAttribute("value") || "";
+            if (digit) {
+              currentNumber += digit;
+              document
+                .getElementById("phoneDisplayText")
+                .setAttribute("value", currentNumber);
+            }
+          });
         });
       });
 
@@ -593,8 +748,9 @@
         append("📞 Wähle: " + currentNumber);
         playRingtone().then(() => {
           append("✅ Verbindung aufgebaut!");
-          // Hier GPT starten:
-          // speak("Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?");
+          speak(
+            "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
+          );
           currentNumber = "";
           document.getElementById("phoneDisplayText").setAttribute("value", "");
         });
