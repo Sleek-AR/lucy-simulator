@@ -492,7 +492,8 @@
       // 📞 Klingelton abspielen
       function playRingtone() {
         return new Promise((resolve) => {
-          const audio = new Audio("/sounds/ringtone-126505.mp3"); // Pfad ggf. anpassen
+          const audio = new Audio(
+            "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3");
           audio.play();
           setTimeout(() => {
             audio.pause();
