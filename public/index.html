@@ -5,6 +5,18 @@
     <title>Lucy Bewerbungssimulator</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script>
+      AFRAME.registerComponent("enable-controls", {
+        init: function () {
+          this.el.setAttribute("movement-controls", {
+            fly: false,
+            speed: 0.1,
+          });
+          this.el.setAttribute("wasd-controls-enabled", false);
+        },
+      });
+    </script>
+
     <style>
       body {
         margin: 0;
@@ -83,7 +95,7 @@
       <a-sky color="#dfe9f3"></a-sky>
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
-      <a-entity id="cameraRig" movement-controls position="0 0 0">
+      <a-entity id="cameraRig" enable-controls position="0 0 0">
         <a-camera
           position="0 1.9 0"
           raycaster="objects: .clickable"
@@ -409,4 +421,3 @@
     </script>
   </body>
 </html>
-
