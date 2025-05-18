@@ -1,4 +1,5 @@
 import { initCallHandler } from './call-handler.js';
+import { initAudioHandler, playVoiceFromText } from './audio-handler.js';
 
 let isRecording = false;
 let mediaRecorder;
@@ -8,7 +9,7 @@ let micStream;
 let log, blinker, lucy, recordButton, thinkingText, listeningText, roleSelect;
 
 export function initLucyLogic() {
-  // DOM-Elemente selektieren
+  // DOM-Elemente referenzieren
   log = document.getElementById("log");
   blinker = document.getElementById("blinker");
   lucy = document.getElementById("lucy");
@@ -17,14 +18,18 @@ export function initLucyLogic() {
   listeningText = document.getElementById("listeningText");
   roleSelect = document.getElementById("roleSelect");
 
-  // Maus & Trigger-Events
+  // Initialisiere externe Module
+  initAudioHandler();
+  initCallHandler();
+
+  // Event-Listener für Aufnahme
   recordButton.addEventListener("mousedown", startRecording);
   recordButton.addEventListener("mouseup", stopRecording);
   recordButton.addEventListener("mouseleave", stopRecording);
   recordButton.addEventListener("triggerdown", startRecording);
   recordButton.addEventListener("triggerup", stopRecording);
 
-  // Leertaste
+  // Leertaste zum Aufnehmen
   document.addEventListener("keydown", (e) => {
     if (e.code === "Space") startRecording();
   });
@@ -32,7 +37,7 @@ export function initLucyLogic() {
     if (e.code === "Space") stopRecording();
   });
 
-  // VR Skalierung
+  // Lucy-Größe im VR-Modus anpassen
   AFRAME.scenes[0].addEventListener("enter-vr", () => {
     lucy.setAttribute("scale", "0.5 0.5 0.5");
   });
@@ -40,10 +45,7 @@ export function initLucyLogic() {
     lucy.setAttribute("scale", "1.5 1.5 1.5");
   });
 
-  // Init Anruf-Logik
-  initCallHandler();
-
-  // Globale Rollenauswahl
+  // Globale Rollenauswahl verfügbar machen
   window.setRole = setRole;
 }
 
@@ -51,6 +53,7 @@ function setRole(role) {
   roleSelect.value = role;
   appendToLog(`🎭 Rolle geändert: ${role}`);
   const isPhoneMode = role === "telefon";
+
   lucy.setAttribute("visible", !isPhoneMode);
   lucy.setAttribute("scale", isPhoneMode ? "0 0 0" : "1.5 1.5 1.5");
 
@@ -60,38 +63,17 @@ function setRole(role) {
   }
 }
 
-function appendToLog(msg) {
+export function appendToLog(msg) {
   if (!log) return;
   log.innerHTML += `<div>${msg}</div>`;
   log.scrollTop = log.scrollHeight;
 }
 
-async function playVoiceFromText(text) {
-  try {
-    const response = await fetch("/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    lucy.emit("speak");
-    thinkingText.setAttribute("visible", false);
-    audio.play();
-    audio.onended = () => lucy.emit("stopspeak");
-  } catch (error) {
-    console.error("TTS-Fehler:", error);
-    appendToLog("⚠️ Konnte Antwort nicht abspielen.");
-    thinkingText.setAttribute("visible", false);
-  }
-}
-
-function speak(text) {
+export function speak(text) {
   playVoiceFromText(text);
 }
 
-async function startRecording() {
+export async function startRecording() {
   if (isRecording) return;
   isRecording = true;
 
@@ -148,6 +130,3 @@ function stopRecording() {
     mediaRecorder.stop();
   }
 }
-
-// Für andere Module verfügbar machen
-export { speak, startRecording, appendToLog };
