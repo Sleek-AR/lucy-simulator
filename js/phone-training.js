@@ -34,13 +34,13 @@ export function initPhoneTraining({ startRecording, speak, append }) {
 
       setTimeout(() => {
         append("✅ Verbindung aufgebaut!");
-        speak("Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
+        speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
         startRecording();
       }, 10000);
     } catch (error) {
       console.warn("Klingelton konnte nicht abgespielt werden:", error);
       append("⚠️ Klingelton blockiert. Starte direkt mit Begrüßung.");
-      speak("Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
+      speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
       startRecording();
     }
   }
