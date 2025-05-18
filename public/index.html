@@ -343,7 +343,6 @@
       const listeningText = document.getElementById("listeningText");
       const roleSelect = document.getElementById("roleSelect");
 
-      let hasSimulatedCall = false;
       let mediaRecorder;
       let audioChunks = [];
       let micStream;
@@ -487,98 +486,6 @@
           lucyEl.setAttribute("scale", "1.5 1.5 1.5");
         }
       }
-
-        // 📞 Klingelton abspielen
-      function playRingtone() {
-        return new Promise((resolve) => {
-          const audio = new Audio(
-            "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3"
-          );
-
-          // 👉 Versuche abzuspielen und fange Fehler ab (z. B. durch Autoplay-Sperre)
-          audio
-            .play()
-            .then(() => {
-              append("🔔 Klingelton startet...");
-            })
-            .catch((err) => {
-              console.warn("Autoplay blockiert:", err);
-              append(
-                "⚠️ Klingelton konnte nicht abgespielt werden (Autoplay-Sperre)."
-              );
-              resolve(); // trotzdem nach vorne weitermachen
-            });
-
-          // ⏱ Klingelton nach 6 Sekunden beenden
-          setTimeout(() => {
-            audio.pause();
-            resolve();
-          }, 6000);
-        });
-      }
-
-      // 🟢 Start-Button für Telefonat
-      window.addEventListener("DOMContentLoaded", () => {
-        const callPlane = document.getElementById("greenCallPlane");
-        const lucy = document.getElementById("lucy");
-        const log = document.getElementById("log");
-
-        let hasSimulatedCall = false;
-
-        function append(msg) {
-          log.innerHTML += `<div>${msg}</div>`;
-          log.scrollTop = log.scrollHeight;
-        }
-
-        async function speak(text) {
-          const res = await fetch("/tts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
-          });
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const audio = new Audio(url);
-          lucy.emit("speak");
-          audio.play();
-          audio.onended = () => lucy.emit("stopspeak");
-        }
-
-        async function sendTranscript() {
-          append("📤 Transkript wird gesendet...");
-          const res = await fetch("/upload-transcript?role=telefon", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transcript: "Hallo, ich benötige Hilfe bei der Bestellung.",
-            }),
-          });
-          const data = await res.json();
-          speak(data.response || "Es gab ein Problem.");
-        }
-
-        async function startRecording() {
-          append("🎙️ Aufnahme läuft...");
-          if (typeof window.startRecording === "function") {
-            window.startRecording();
-          }
-        }
-
-        callPlane.addEventListener("click", async () => {
-          if (!hasSimulatedCall) {
-            hasSimulatedCall = true;
-            append("📞 Wähle: +43 660 3262626");
-            await playRingtone();
-            append("✅ Verbindung aufgebaut");
-            await speak(
-              "Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
-            );
-            await sendTranscript();
-          } else {
-            startRecording();
-          }
-        });
-      });
     </script>
   </body>
 </html>
