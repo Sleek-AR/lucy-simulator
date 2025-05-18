@@ -48,7 +48,7 @@ export function initPhoneTraining({ startRecording, speak, append }) {
   // Klick auf Button startet Gespräch
   callBtn.addEventListener("click", startCall);
 
-  // Funktion wird global verfügbar gemacht
+  // Globale Funktion zur Aktivierung der Rolle
   window.setPhoneRole = function () {
     append("🎭 Rolle geändert: telefon");
     callBtn.setAttribute("visible", true);
@@ -56,8 +56,10 @@ export function initPhoneTraining({ startRecording, speak, append }) {
     lucy.setAttribute("scale", "0 0 0");
   };
 
-  // Direkt aktivieren, falls bei Start schon "telefon" gewählt ist
-  if (roleSelect.value === "telefon") {
-    window.setPhoneRole();
-  }
+  // Sicherstellen, dass Lucy auch beim Start direkt verschwindet
+  setTimeout(() => {
+    if (roleSelect.value === "telefon") {
+      window.setPhoneRole();
+    }
+  }, 100);
 }
