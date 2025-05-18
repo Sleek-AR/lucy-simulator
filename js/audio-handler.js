@@ -5,12 +5,22 @@ import { appendToLog } from './lucy-logic.js';
 let lucy = null;
 let thinkingText = null;
 
+/**
+ * Initialisiert Audio-Komponenten: Lucy-Avatar & Denknachricht
+ */
 export function initAudioHandler() {
   lucy = document.getElementById("lucy");
   thinkingText = document.getElementById("thinkingText");
+
+  if (!lucy || !thinkingText) {
+    console.warn("❗ Lucy oder thinkingText konnte nicht gefunden werden.");
+  }
 }
 
-// Spielt Audio über den TTS-Server ab
+/**
+ * Spielt Sprache über den Server (TTS) ab und steuert Lucy
+ * @param {string} text - Der zu sprechende Text
+ */
 export async function playVoiceFromText(text) {
   try {
     const response = await fetch("/tts", {
@@ -18,6 +28,8 @@ export async function playVoiceFromText(text) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
+
+    if (!response.ok) throw new Error("TTS-Serverfehler");
 
     const audioBlob = await response.blob();
     const audioUrl = URL.createObjectURL(audioBlob);
