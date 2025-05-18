@@ -493,7 +493,8 @@
       function playRingtone() {
         return new Promise((resolve) => {
           const audio = new Audio(
-            "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3");
+            "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3"
+          );
           audio.play();
           setTimeout(() => {
             audio.pause();
@@ -508,11 +509,19 @@
         .addEventListener("click", () => {
           append("📞 Wähle: +43 660 3262626");
           playRingtone().then(() => {
+            append("🔔 Klingelton abgespielt. Warte auf Verbindung...");
+          });
+
+          // ⏱️ Nach 10 Sekunden automatisch die Aufnahme starten
+          setTimeout(() => {
             append("✅ Verbindung aufgebaut!");
             speak(
               "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
             );
-          });
+
+            // Aufnahme starten, wie bei Leertaste oder Button
+            startRecording();
+          }, 10000); // 10 Sekunden
         });
     </script>
   </body>
