@@ -1,38 +1,37 @@
 import { initAudioHandler, playVoiceFromText } from './audio-handler.js';
 import { initCallHandler } from './call-handler.js';
 import { initRoleHandler } from './role-handler.js';
+import {
+  initUIHandler,
+  logMessage,
+  setBlinker,
+  setThinking,
+  setListening
+} from './ui-handler.js';
 
 let isRecording = false;
 let mediaRecorder;
 let audioChunks = [];
 let micStream;
 
-let log, blinker, recordButton, thinkingText, listeningText;
-
 /**
- * Initialisiert alle Lucy-bezogenen Funktionen
+ * Initialisiert alle Lucy-Komponenten und Logik
  */
 export function initLucyLogic() {
-  // DOM-Elemente referenzieren
-  log = document.getElementById("log");
-  blinker = document.getElementById("blinker");
-  recordButton = document.getElementById("recordButton");
-  thinkingText = document.getElementById("thinkingText");
-  listeningText = document.getElementById("listeningText");
-
-  // Modul-Initialisierungen
+  initUIHandler();
   initAudioHandler();
   initCallHandler();
   initRoleHandler();
 
-  // Aufnahme: Maus / Trigger
+  // Event-Listener für Aufnahme via Maus & Controller
+  const recordButton = document.getElementById("recordButton");
   recordButton.addEventListener("mousedown", startRecording);
   recordButton.addEventListener("mouseup", stopRecording);
   recordButton.addEventListener("mouseleave", stopRecording);
   recordButton.addEventListener("triggerdown", startRecording);
   recordButton.addEventListener("triggerup", stopRecording);
 
-  // Aufnahme: Tastatur (Leertaste)
+  // Tastatur: Leertaste starten/stoppen
   document.addEventListener("keydown", (e) => {
     if (e.code === "Space") startRecording();
   });
@@ -40,7 +39,7 @@ export function initLucyLogic() {
     if (e.code === "Space") stopRecording();
   });
 
-  // VR: Lucy skalieren
+  // VR-Modus: Lucy skalieren
   AFRAME.scenes[0].addEventListener("enter-vr", () => {
     const lucy = document.getElementById("lucy");
     lucy?.setAttribute("scale", "0.5 0.5 0.5");
@@ -52,17 +51,7 @@ export function initLucyLogic() {
 }
 
 /**
- * Zeigt eine Nachricht im Log an
- * @param {string} msg - Textnachricht
- */
-export function appendToLog(msg) {
-  if (!log) return;
-  log.innerHTML += `<div>${msg}</div>`;
-  log.scrollTop = log.scrollHeight;
-}
-
-/**
- * Spricht einen Text über den TTS-Handler
+ * Spielt Text über Lucy (TTS)
  * @param {string} text
  */
 export function speak(text) {
@@ -85,17 +74,20 @@ export async function startRecording() {
 
     mediaRecorder.onstop = async () => {
       isRecording = false;
-      appendToLog("🛑 Aufnahme gestoppt.");
-      blinker.style.display = "none";
-      listeningText.setAttribute("visible", false);
-      if (micStream) micStream.getTracks().forEach((t) => t.stop());
+      logMessage("🛑 Aufnahme gestoppt.");
+      setBlinker(false);
+      setListening(false);
+
+      if (micStream) {
+        micStream.getTracks().forEach((t) => t.stop());
+      }
 
       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
       const formData = new FormData();
       formData.append("audio", audioBlob, "speech.webm");
 
-      appendToLog("⏳ Sende Audio an Server...");
-      thinkingText.setAttribute("visible", true);
+      logMessage("⏳ Sende Audio an Server...");
+      setThinking(true);
 
       try {
         const roleSelect = document.getElementById("roleSelect");
@@ -109,22 +101,23 @@ export async function startRecording() {
         const data = await res.json();
         const reply = data.response || data.error || "Fehler bei Antwort";
 
-        appendToLog("🤖 <b>Lucy:</b> " + reply);
+        logMessage("🤖 <b>Lucy:</b> " + reply);
         speak(reply);
       } catch (error) {
         console.error("Upload-Fehler:", error);
-        appendToLog("❌ Fehler beim Senden oder Verarbeiten.");
-        thinkingText.setAttribute("visible", false);
+        logMessage("❌ Fehler beim Senden oder Verarbeiten.");
+        setThinking(false);
       }
     };
 
     mediaRecorder.start();
-    blinker.style.display = "block";
-    listeningText.setAttribute("visible", true);
-    appendToLog("🎙️ Aufnahme läuft...");
+    setBlinker(true);
+    setListening(true);
+    logMessage("🎙️ Aufnahme läuft...");
   } catch (err) {
     isRecording = false;
     console.error("Mikrofon-Fehler:", err);
+    logMessage("⚠️ Mikrofonzugriff nicht möglich.");
   }
 }
 
