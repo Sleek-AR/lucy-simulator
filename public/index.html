@@ -16,6 +16,7 @@
         },
       });
 
+      // A-Frame
       AFRAME.registerComponent("move-rig-with-thumbstick", {
         schema: { speed: { type: "number", default: 0.1 } },
         init: function () {
@@ -46,6 +47,7 @@
       });
     </script>
 
+    // Style
     <style>
       body {
         margin: 0;
@@ -88,6 +90,8 @@
         padding: 4px;
       }
     </style>
+
+    // Entity
   </head>
   <body>
     <div class="blinker" id="blinker"></div>
@@ -191,6 +195,7 @@
       </a-entity>
     </a-scene>
 
+    // Spracheingabe
     <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
     <script>
