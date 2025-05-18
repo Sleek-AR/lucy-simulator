@@ -531,26 +531,29 @@
         });
       }
 
-      // 📞 Button-Logik – grüner Button startet alles
+// 🟢 Start-Button für Telefonat
       document
         .getElementById("simpleCallButton")
         .addEventListener("click", async () => {
           append("📞 Wähle: +43 660 3262626");
 
           try {
-            await playRingtone(); // Klingelton abspielen
-            append("🔔 Klingelton beendet. Warte auf Verbindung...");
+            // 1. Klingelton abspielen
+            await playRingtone();
+            append("📶 Verbindung wird hergestellt...");
 
+            // 2. Begrüßung und Aufnahme nach 10 Sekunden
             setTimeout(() => {
               append("✅ Verbindung aufgebaut!");
               speak(
-                "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
+                "Willkommen beim Bewerbungstraining mit Herrn Berger von Möbel Berger. Wie kann ich Ihnen helfen?"
               );
               startRecording();
-            }, 10000); // Verzögerung nach Klingelton
+            }, 10000);
           } catch (error) {
             console.warn("Klingelton konnte nicht abgespielt werden:", error);
             append("⚠️ Klingelton blockiert. Starte direkt mit Begrüßung.");
+
             speak(
               "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
             );
@@ -560,3 +563,4 @@
     </script>
   </body>
 </html>
+
