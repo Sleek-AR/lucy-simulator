@@ -385,68 +385,54 @@
         if (isRecording) return;
         isRecording = true;
 
-        append("📞 Verbindung wird aufgebaut…");
-
         try {
-          // Klingelton zuerst
-          await playRingtone();
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(micStream, {
+            mimeType: "audio/webm",
+          });
+          audioChunks = [];
 
-          append("✅ Verbindung hergestellt!");
-          speak(
-            "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
-          );
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
 
-          // ⏳ Dann 10 Sekunden warten, bevor Aufnahme startet
-          setTimeout(async () => {
-            micStream = await navigator.mediaDevices.getUserMedia({
-              audio: true,
-            });
-            mediaRecorder = new MediaRecorder(micStream, {
-              mimeType: "audio/webm",
-            });
-            audioChunks = [];
+          mediaRecorder.onstop = async () => {
+            isRecording = false;
+            append("🛑 Aufnahme gestoppt.");
+            blinker.style.display = "none";
+            listeningText.setAttribute("visible", false);
+            if (micStream) micStream.getTracks().forEach((t) => t.stop());
 
-            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "speech.webm");
 
-            mediaRecorder.onstop = async () => {
-              isRecording = false;
-              append("🛑 Aufnahme gestoppt.");
-              blinker.style.display = "none";
-              listeningText.setAttribute("visible", false);
-              if (micStream) micStream.getTracks().forEach((t) => t.stop());
+            append("⏳ Sende Audio an Server...");
+            thinkingText.setAttribute("visible", true);
 
-              const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-              const formData = new FormData();
-              formData.append("audio", audioBlob, "speech.webm");
+            try {
+              const role = roleSelect.value || "recruiter";
+              const res = await fetch(`/upload-audio?role=${role}`, {
+                method: "POST",
+                body: formData,
+              });
 
-              append("⏳ Sende Audio an Server...");
-              thinkingText.setAttribute("visible", true);
+              const data = await res.json();
+              const reply = data.response || data.error || "Fehler bei Antwort";
 
-              try {
-                const role = roleSelect.value || "recruiter";
-                const res = await fetch(`/upload-audio?role=${role}`, {
-                  method: "POST",
-                  body: formData,
-                });
+              append("🤖 <b>Lucy:</b> " + reply);
+              speak(reply);
+            } catch (error) {
+              console.error("Upload-Fehler:", error);
+              append("❌ Fehler beim Senden oder Verarbeiten.");
+              thinkingText.setAttribute("visible", false);
+            }
+          };
 
-                const data = await res.json();
-                const reply =
-                  data.response || data.error || "Fehler bei Antwort";
-
-                append("🤖 <b>Lucy:</b> " + reply);
-                speak(reply);
-              } catch (error) {
-                console.error("Upload-Fehler:", error);
-                append("❌ Fehler beim Senden oder Verarbeiten.");
-                thinkingText.setAttribute("visible", false);
-              }
-            };
-
-            mediaRecorder.start();
-            blinker.style.display = "block";
-            listeningText.setAttribute("visible", true);
-            append("🎙️ Aufnahme läuft...");
-          }, 10000); // 10 Sekunden warten
+          mediaRecorder.start();
+          blinker.style.display = "block";
+          listeningText.setAttribute("visible", true);
+          append("🎙️ Aufnahme läuft...");
         } catch (err) {
           isRecording = false;
           console.error("Mikrofon-Fehler:", err);
@@ -507,7 +493,7 @@
       // 📞 Klingelton abspielen
       function playRingtone() {
         return new Promise((resolve) => {
-          const audio = new Audio("https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3");
+          const audio = new Audio("public/sounds/ringtone-126505.mp3");
 
           // 👉 Versuche abzuspielen und fange Fehler ab (z. B. durch Autoplay-Sperre)
           audio
@@ -538,15 +524,13 @@
           append("📞 Wähle: +43 660 3262626");
 
           try {
-            // 1. Klingelton abspielen
             await playRingtone();
             append("📶 Verbindung wird hergestellt...");
 
-            // 2. Begrüßung und Aufnahme nach 10 Sekunden
             setTimeout(() => {
               append("✅ Verbindung aufgebaut!");
               speak(
-                "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
+                "Willkommen beim Bewerbungstraining mit Herrn Berger von Möbel Berger. Wie kann ich Ihnen helfen?"
               );
               startRecording();
             }, 10000);
