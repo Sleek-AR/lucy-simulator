@@ -337,13 +337,14 @@
       import { createPhoneUI } from "./js/phone-ui/phone-ui.js";
 
       // UI erzeugen (damit window.togglePhoneUI funktioniert)
-      createPhoneUI({
-        onCall: (number) => {
-          console.log("Nummer gewählt:", number);
-          document.getElementById("simpleCallButton").click(); // simuliert Klick auf Anrufbutton
-        },
+      window.addEventListener("DOMContentLoaded", () => {
+        createPhoneUI({
+          onCall: (number) => {
+            console.log("Nummer gewählt:", number);
+            document.getElementById("simpleCallButton").click();
+          },
+        });
       });
-
       initPhoneTraining({ startRecording, speak, append });
     </script>
   </body>
