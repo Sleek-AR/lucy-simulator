@@ -335,8 +335,6 @@
     <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
     <script>
-      let hasSimulatedCall = false;
-
       const log = document.getElementById("log");
       const blinker = document.getElementById("blinker");
       const lucy = document.getElementById("lucy");
@@ -345,6 +343,7 @@
       const listeningText = document.getElementById("listeningText");
       const roleSelect = document.getElementById("roleSelect");
 
+      let hasSimulatedCall = false;
       let mediaRecorder;
       let audioChunks = [];
       let micStream;
