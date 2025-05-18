@@ -523,15 +523,15 @@
               resolve(); // trotzdem nach vorne weitermachen
             });
 
-          // ⏱ Klingelton nach 15 Sekunden beenden
+          // ⏱ Klingelton nach 6 Sekunden beenden
           setTimeout(() => {
             audio.pause();
             resolve();
-          }, 15000);
+          }, 6000);
         });
       }
 
-// 🟢 Start-Button für Telefonat
+      // 🟢 Start-Button für Telefonat
       document
         .getElementById("simpleCallButton")
         .addEventListener("click", async () => {
@@ -563,4 +563,3 @@
     </script>
   </body>
 </html>
-
