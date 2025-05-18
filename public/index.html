@@ -499,29 +499,29 @@
           setTimeout(() => {
             audio.pause();
             resolve();
-          }, 3000);
+          }, 3000); // Klingeldauer
         });
       }
 
-      // 📞 Button-Logik
+      // 📞 Button-Logik – grüner Button startet alles
       document
         .getElementById("simpleCallButton")
         .addEventListener("click", () => {
           append("📞 Wähle: +43 660 3262626");
+
+          // 1. Klingelton starten
           playRingtone().then(() => {
-            append("🔔 Klingelton abgespielt. Warte auf Verbindung...");
+            append("🔔 Klingelton beendet. Warte auf Verbindung...");
           });
 
-          // ⏱️ Nach 10 Sekunden automatisch die Aufnahme starten
+          // 2. Nach 10 Sekunden: Start Begrüßung + Aufnahme
           setTimeout(() => {
             append("✅ Verbindung aufgebaut!");
             speak(
               "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
             );
-
-            // Aufnahme starten, wie bei Leertaste oder Button
-            startRecording();
-          }, 10000); // 10 Sekunden
+            startRecording(); // startet die Mikrofon-Aufnahme
+          }, 10000);
         });
     </script>
   </body>
