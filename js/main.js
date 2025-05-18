@@ -3,12 +3,19 @@
 import { setupVRControls } from './js/vr-controls.js';
 import { initLucyLogic } from './js/lucy-logic.js';
 
-window.addEventListener('DOMContentLoaded', () => {
-  // Initialisiere VR-spezifische Controls
+window.addEventListener('load', () => {
+  // Initialisiere VR-spezifische Steuerung
   setupVRControls();
 
-  // Initialisiere Lucy-Logik (Audio, UI, Rollenwahl etc.)
-  initLucyLogic();
+  // Warte auf vollständiges Laden der A-Frame Szene
+  const scene = document.querySelector("a-scene");
+  if (scene?.hasLoaded) {
+    initLucyLogic();
+  } else {
+    scene?.addEventListener("loaded", () => {
+      initLucyLogic();
+    });
+  }
 
   console.log("Lucy Bewerbungssimulator geladen.");
 });
