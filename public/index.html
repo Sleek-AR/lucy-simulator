@@ -495,11 +495,26 @@
           const audio = new Audio(
             "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3"
           );
-          audio.play();
+
+          // 👉 Versuche abzuspielen und fange Fehler ab (z. B. durch Autoplay-Sperre)
+          audio
+            .play()
+            .then(() => {
+              append("🔔 Klingelton startet...");
+            })
+            .catch((err) => {
+              console.warn("Autoplay blockiert:", err);
+              append(
+                "⚠️ Klingelton konnte nicht abgespielt werden (Autoplay-Sperre)."
+              );
+              resolve(); // trotzdem nach vorne weitermachen
+            });
+
+          // ⏱ Klingelton nach 3 Sekunden beenden
           setTimeout(() => {
             audio.pause();
             resolve();
-          }, 3000); // Klingeldauer
+          }, 3000);
         });
       }
 
