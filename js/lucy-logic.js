@@ -1,35 +1,38 @@
-import { initCallHandler } from './call-handler.js';
 import { initAudioHandler, playVoiceFromText } from './audio-handler.js';
+import { initCallHandler } from './call-handler.js';
+import { initRoleHandler } from './role-handler.js';
 
 let isRecording = false;
 let mediaRecorder;
 let audioChunks = [];
 let micStream;
 
-let log, blinker, lucy, recordButton, thinkingText, listeningText, roleSelect;
+let log, blinker, recordButton, thinkingText, listeningText;
 
+/**
+ * Initialisiert alle Lucy-bezogenen Funktionen
+ */
 export function initLucyLogic() {
   // DOM-Elemente referenzieren
   log = document.getElementById("log");
   blinker = document.getElementById("blinker");
-  lucy = document.getElementById("lucy");
   recordButton = document.getElementById("recordButton");
   thinkingText = document.getElementById("thinkingText");
   listeningText = document.getElementById("listeningText");
-  roleSelect = document.getElementById("roleSelect");
 
-  // Initialisiere externe Module
+  // Modul-Initialisierungen
   initAudioHandler();
   initCallHandler();
+  initRoleHandler();
 
-  // Event-Listener für Aufnahme
+  // Aufnahme: Maus / Trigger
   recordButton.addEventListener("mousedown", startRecording);
   recordButton.addEventListener("mouseup", stopRecording);
   recordButton.addEventListener("mouseleave", stopRecording);
   recordButton.addEventListener("triggerdown", startRecording);
   recordButton.addEventListener("triggerup", stopRecording);
 
-  // Leertaste zum Aufnehmen
+  // Aufnahme: Tastatur (Leertaste)
   document.addEventListener("keydown", (e) => {
     if (e.code === "Space") startRecording();
   });
@@ -37,42 +40,38 @@ export function initLucyLogic() {
     if (e.code === "Space") stopRecording();
   });
 
-  // Lucy-Größe im VR-Modus anpassen
+  // VR: Lucy skalieren
   AFRAME.scenes[0].addEventListener("enter-vr", () => {
-    lucy.setAttribute("scale", "0.5 0.5 0.5");
+    const lucy = document.getElementById("lucy");
+    lucy?.setAttribute("scale", "0.5 0.5 0.5");
   });
   AFRAME.scenes[0].addEventListener("exit-vr", () => {
-    lucy.setAttribute("scale", "1.5 1.5 1.5");
+    const lucy = document.getElementById("lucy");
+    lucy?.setAttribute("scale", "1.5 1.5 1.5");
   });
-
-  // Globale Rollenauswahl verfügbar machen
-  window.setRole = setRole;
 }
 
-function setRole(role) {
-  roleSelect.value = role;
-  appendToLog(`🎭 Rolle geändert: ${role}`);
-  const isPhoneMode = role === "telefon";
-
-  lucy.setAttribute("visible", !isPhoneMode);
-  lucy.setAttribute("scale", isPhoneMode ? "0 0 0" : "1.5 1.5 1.5");
-
-  const callBtn = document.getElementById("simpleCallButton");
-  if (callBtn) {
-    callBtn.setAttribute("visible", isPhoneMode);
-  }
-}
-
+/**
+ * Zeigt eine Nachricht im Log an
+ * @param {string} msg - Textnachricht
+ */
 export function appendToLog(msg) {
   if (!log) return;
   log.innerHTML += `<div>${msg}</div>`;
   log.scrollTop = log.scrollHeight;
 }
 
+/**
+ * Spricht einen Text über den TTS-Handler
+ * @param {string} text
+ */
 export function speak(text) {
   playVoiceFromText(text);
 }
 
+/**
+ * Startet die Audioaufnahme
+ */
 export async function startRecording() {
   if (isRecording) return;
   isRecording = true;
@@ -99,13 +98,17 @@ export async function startRecording() {
       thinkingText.setAttribute("visible", true);
 
       try {
-        const role = roleSelect.value || "recruiter";
+        const roleSelect = document.getElementById("roleSelect");
+        const role = roleSelect?.value || "recruiter";
+
         const res = await fetch(`/upload-audio?role=${role}`, {
           method: "POST",
           body: formData,
         });
+
         const data = await res.json();
         const reply = data.response || data.error || "Fehler bei Antwort";
+
         appendToLog("🤖 <b>Lucy:</b> " + reply);
         speak(reply);
       } catch (error) {
@@ -125,6 +128,9 @@ export async function startRecording() {
   }
 }
 
+/**
+ * Beendet die Aufnahme, wenn aktiv
+ */
 function stopRecording() {
   if (mediaRecorder && mediaRecorder.state === "recording") {
     mediaRecorder.stop();
