@@ -488,7 +488,7 @@
         }
       }
 
-      // 📞 Klingelton abspielen
+        // 📞 Klingelton abspielen
       function playRingtone() {
         return new Promise((resolve) => {
           const audio = new Audio(
@@ -518,30 +518,66 @@
       }
 
       // 🟢 Start-Button für Telefonat
-      document.getElementById("greenCallPlane").addEventListener("click", async () => {
-        if (!hasSimulatedCall) {
-          append("📞 Wähle: +43 660 3262626");
+      window.addEventListener("DOMContentLoaded", () => {
+        const callPlane = document.getElementById("greenCallPlane");
+        const lucy = document.getElementById("lucy");
+        const log = document.getElementById("log");
 
-          try {
-            await playRingtone(); // 10 Sek. Klingelton
-            append("✅ Verbindung aufgebaut!");
+        let hasSimulatedCall = false;
 
-            speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
-            await sendTranscript(); // Statisches Transkript senden
-
-            hasSimulatedCall = true; // Nur 1x Simulation
-          } catch (error) {
-            console.warn("Klingelton blockiert:", error);
-            append("⚠️ Klingelton blockiert. Starte direkt.");
-
-            speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
-            await sendTranscript();
-            hasSimulatedCall = true;
-          }
-        } else {
-          // Ab dem zweiten Klick: Aufnahme starten
-          startRecording();
+        function append(msg) {
+          log.innerHTML += `<div>${msg}</div>`;
+          log.scrollTop = log.scrollHeight;
         }
+
+        async function speak(text) {
+          const res = await fetch("/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          lucy.emit("speak");
+          audio.play();
+          audio.onended = () => lucy.emit("stopspeak");
+        }
+
+        async function sendTranscript() {
+          append("📤 Transkript wird gesendet...");
+          const res = await fetch("/upload-transcript?role=telefon", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              transcript: "Hallo, ich benötige Hilfe bei der Bestellung.",
+            }),
+          });
+          const data = await res.json();
+          speak(data.response || "Es gab ein Problem.");
+        }
+
+        async function startRecording() {
+          append("🎙️ Aufnahme läuft...");
+          if (typeof window.startRecording === "function") {
+            window.startRecording();
+          }
+        }
+
+        callPlane.addEventListener("click", async () => {
+          if (!hasSimulatedCall) {
+            hasSimulatedCall = true;
+            append("📞 Wähle: +43 660 3262626");
+            await playRingtone();
+            append("✅ Verbindung aufgebaut");
+            await speak(
+              "Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
+            );
+            await sendTranscript();
+          } else {
+            startRecording();
+          }
+        });
       });
     </script>
   </body>
