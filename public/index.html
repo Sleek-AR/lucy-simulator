@@ -339,6 +339,7 @@
 
     <script>
       let hasSimulatedCall = false;
+
       const log = document.getElementById("log");
       const blinker = document.getElementById("blinker");
       const lucy = document.getElementById("lucy");
@@ -521,35 +522,31 @@
       }
 
       // 🟢 Start-Button für Telefonat
-     document.getElementById("simpleCallButton").addEventListener("click", async () => {
-      append("📞 Wähle: +43 660 3262626");
+        document.getElementById("simpleCallButton").addEventListener("click", async () => {
+          if (!hasSimulatedCall) {
+            append("📞 Wähle: +43 660 3262626");
 
-      try {
-        await playRingtone(); // 10 Sekunden klingeln
-        append("✅ Verbindung aufgebaut!");
+            try {
+              await playRingtone(); // 10 Sekunden klingeln
+              append("✅ Verbindung aufgebaut!");
 
-        speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
+              speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
+              await sendTranscript(); // Statisches Transkript senden
 
-        if (!hasSimulatedCall) {
-          hasSimulatedCall = true; // Nur einmalig ausführen
-          await sendTranscript();  // ⬅️ Deine statische Anfrage
-        } else {
-          startRecording();        // ⬅️ Danach wie gewohnt aufnehmen
-        }
-      } catch (error) {
-        console.warn("Klingelton blockiert:", error);
-        append("⚠️ Klingelton blockiert. Starte direkt mit Begrüßung.");
+              hasSimulatedCall = true; // ✅ Merken: Simulation war einmalig
+            } catch (error) {
+              console.warn("Klingelton blockiert:", error);
+              append("⚠️ Klingelton blockiert. Starte direkt.");
 
-        speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
-
-        if (!hasSimulatedCall) {
-          hasSimulatedCall = true;
-          await sendTranscript();
-        } else {
-          startRecording();
-        }
-      }
-    });
+              speak("Willkommen bei Bürobedarf Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?");
+              await sendTranscript();
+              hasSimulatedCall = true;
+            }
+          } else {
+            // 🔁 Normale Folgeanrufe ohne Klingelton & Begrüßung
+            startRecording();
+          }
+        });
     </script>
   </body>
 </html>
