@@ -521,22 +521,28 @@
       // 📞 Button-Logik – grüner Button startet alles
       document
         .getElementById("simpleCallButton")
-        .addEventListener("click", () => {
+        .addEventListener("click", async () => {
           append("📞 Wähle: +43 660 3262626");
 
-          // 1. Klingelton starten
-          playRingtone().then(() => {
+          try {
+            await playRingtone(); // Klingelton abspielen
             append("🔔 Klingelton beendet. Warte auf Verbindung...");
-          });
 
-          // 2. Nach 10 Sekunden: Start Begrüßung + Aufnahme
-          setTimeout(() => {
-            append("✅ Verbindung aufgebaut!");
+            setTimeout(() => {
+              append("✅ Verbindung aufgebaut!");
+              speak(
+                "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
+              );
+              startRecording();
+            }, 10000); // Verzögerung nach Klingelton
+          } catch (error) {
+            console.warn("Klingelton konnte nicht abgespielt werden:", error);
+            append("⚠️ Klingelton blockiert. Starte direkt mit Begrüßung.");
             speak(
               "Willkommen beim Bewerbungstraining. Wie kann ich Ihnen helfen?"
             );
-            startRecording(); // startet die Mikrofon-Aufnahme
-          }, 10000);
+            startRecording();
+          }
         });
     </script>
   </body>
