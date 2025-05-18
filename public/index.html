@@ -493,7 +493,7 @@
       // 📞 Klingelton abspielen
       function playRingtone() {
         return new Promise((resolve) => {
-          const audio = new Audio("public/sounds/ringtone-126505.mp3");
+          const audio = new Audio("https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3");
 
           // 👉 Versuche abzuspielen und fange Fehler ab (z. B. durch Autoplay-Sperre)
           audio
@@ -530,7 +530,7 @@
             setTimeout(() => {
               append("✅ Verbindung aufgebaut!");
               speak(
-                "Willkommen beim Bewerbungstraining mit Herrn Berger von Möbel Berger. Wie kann ich Ihnen helfen?"
+                "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
               );
               startRecording();
             }, 10000);
