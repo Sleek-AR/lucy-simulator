@@ -23,15 +23,19 @@ export function initLucyLogic() {
   initCallHandler();
   initRoleHandler();
 
-  // Event-Listener für Aufnahme via Maus & Controller
+  // Warten, bis alle DOM-Elemente sicher verfügbar sind
   const recordButton = document.getElementById("recordButton");
-  recordButton.addEventListener("mousedown", startRecording);
-  recordButton.addEventListener("mouseup", stopRecording);
-  recordButton.addEventListener("mouseleave", stopRecording);
-  recordButton.addEventListener("triggerdown", startRecording);
-  recordButton.addEventListener("triggerup", stopRecording);
+  if (recordButton) {
+    recordButton.addEventListener("mousedown", startRecording);
+    recordButton.addEventListener("mouseup", stopRecording);
+    recordButton.addEventListener("mouseleave", stopRecording);
+    recordButton.addEventListener("triggerdown", startRecording);
+    recordButton.addEventListener("triggerup", stopRecording);
+  } else {
+    console.warn("⚠️ recordButton nicht gefunden – keine Aufnahme möglich.");
+  }
 
-  // Tastatur: Leertaste starten/stoppen
+  // Tastatursteuerung (Leertaste)
   document.addEventListener("keydown", (e) => {
     if (e.code === "Space") startRecording();
   });
@@ -39,20 +43,22 @@ export function initLucyLogic() {
     if (e.code === "Space") stopRecording();
   });
 
-  // VR-Modus: Lucy skalieren
-  AFRAME.scenes[0].addEventListener("enter-vr", () => {
-    const lucy = document.getElementById("lucy");
-    lucy?.setAttribute("scale", "0.5 0.5 0.5");
-  });
-  AFRAME.scenes[0].addEventListener("exit-vr", () => {
-    const lucy = document.getElementById("lucy");
-    lucy?.setAttribute("scale", "1.5 1.5 1.5");
-  });
+  // VR: Lucy skalieren je nach Modus
+  const scene = AFRAME.scenes?.[0];
+  if (scene) {
+    scene.addEventListener("enter-vr", () => {
+      const lucy = document.getElementById("lucy");
+      lucy?.setAttribute("scale", "0.5 0.5 0.5");
+    });
+    scene.addEventListener("exit-vr", () => {
+      const lucy = document.getElementById("lucy");
+      lucy?.setAttribute("scale", "1.5 1.5 1.5");
+    });
+  }
 }
 
 /**
- * Spielt Text über Lucy (TTS)
- * @param {string} text
+ * Spricht den Text über TTS aus
  */
 export function speak(text) {
   playVoiceFromText(text);
@@ -78,9 +84,7 @@ export async function startRecording() {
       setBlinker(false);
       setListening(false);
 
-      if (micStream) {
-        micStream.getTracks().forEach((t) => t.stop());
-      }
+      if (micStream) micStream.getTracks().forEach((t) => t.stop());
 
       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
       const formData = new FormData();
@@ -122,7 +126,7 @@ export async function startRecording() {
 }
 
 /**
- * Beendet die Aufnahme, wenn aktiv
+ * Stoppt laufende Audioaufnahme
  */
 function stopRecording() {
   if (mediaRecorder && mediaRecorder.state === "recording") {
