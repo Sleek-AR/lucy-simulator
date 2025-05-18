@@ -336,20 +336,6 @@
   import { initPhoneTraining } from "./js/phone-training.js";
   import { createPhoneUI } from "./js/phone-ui/phone-ui.js";
 
-  createPhoneUI({
-    onCall: async (number) => {
-      append("📞 Wähle: " + number);
-      try {
-        await playRingtone();
-        append("📶 Verbindung aufgebaut!");
-        speak("Willkommen bei Möbel Berger. Wie kann ich Ihnen helfen?");
-        startRecording();
-      } catch (e) {
-        append("❌ Fehler beim Anruf.");
-      }
-    },
-  });
-
   initPhoneTraining({ startRecording, speak, append });
 </script>
   </body>
