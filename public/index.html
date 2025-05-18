@@ -5,8 +5,48 @@
     <title>Lucy Bewerbungssimulator</title>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
-    <script src="/js/aframe-components.js"></script>
-    <script src="/js/main.js" type="module"></script>
+    <script>
+      AFRAME.registerComponent("enable-controls", {
+        init: function () {
+          this.el.setAttribute("movement-controls", {
+            fly: false,
+            speed: 0.1,
+          });
+          this.el.setAttribute("wasd-controls-enabled", false);
+        },
+      });
+
+      AFRAME.registerComponent("move-rig-with-thumbstick", {
+        schema: { speed: { type: "number", default: 0.1 } },
+        init: function () {
+          this.rig = document.querySelector("#cameraRig");
+          this.camera = document.querySelector("#camera");
+          this.direction = new THREE.Vector3();
+          this.el.addEventListener("thumbstickmoved", (e) => {
+            this.direction.set(e.detail.x, 0, e.detail.y);
+            this.direction.multiplyScalar(this.data.speed);
+            const camQuat = this.camera.object3D.quaternion;
+            this.direction.applyQuaternion(camQuat);
+            this.rig.object3D.position.add(this.direction);
+          });
+        },
+      });
+
+      // Bewegung per Tastatur nur in Webmodus aktivieren
+      window.addEventListener("DOMContentLoaded", () => {
+        const scene = document.querySelector("a-scene");
+        const camera = document.getElementById("camera");
+
+        scene.addEventListener("enter-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", false);
+        });
+
+        scene.addEventListener("exit-vr", () => {
+          camera.setAttribute("wasd-controls-enabled", true);
+        });
+      });
+    </script>
+
     <style>
       body {
         margin: 0;
@@ -84,6 +124,7 @@
       <a-sky color="#dfe9f3"></a-sky>
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
+      <!-- KameraRig inkl. Kamera & Controller -->
       <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0 0">
         <a-camera
           id="camera"
@@ -99,6 +140,7 @@
           ></a-entity>
         </a-camera>
 
+        <!-- Controller bewegen sich mit -->
         <a-entity
           laser-controls="hand: left"
           raycaster="objects: .clickable"
@@ -113,6 +155,7 @@
         ></a-entity>
       </a-entity>
 
+      <!-- Lucy -->
       <a-entity
         id="lucy"
         gltf-model="#lucyModel"
@@ -122,6 +165,7 @@
         animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
       ></a-entity>
 
+      <!-- Office -->
       <a-entity
         gltf-model="#officeSet"
         position="-3 0 -6"
@@ -129,6 +173,7 @@
         rotation="0 0 0"
       ></a-entity>
 
+      <!-- Denktext -->
       <a-entity
         id="thinkingText"
         text="value: Lucy denkt nach...; align: center; color: #555"
@@ -145,6 +190,7 @@
         ></a-animation>
       </a-entity>
 
+      <!-- Hörtext -->
       <a-entity
         id="listeningText"
         text="value: Lucy nimmt dich gerade wahr...; align: center; color: #f00"
@@ -161,6 +207,7 @@
         ></a-animation>
       </a-entity>
 
+      <!-- Aufnahmebutton -->
       <a-entity
         id="recordButton"
         geometry="primitive: plane; height: 0.3; width: 1.4"
@@ -170,6 +217,7 @@
         class="clickable"
       ></a-entity>
 
+      <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
         <a-plane
           width="1.8"
@@ -192,6 +240,8 @@
           geometry="primitive: plane; height: 0.25; width: 1.5"
           material="color: #00BFFF"
           position="0 0.2 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
           onclick="setRole('recruiter')"
         >
           <a-text
@@ -208,6 +258,8 @@
           geometry="primitive: plane; height: 0.25; width: 1.5"
           material="color: #00BFFF"
           position="0 -0.1 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
           onclick="setRole('bewerberin')"
         >
           <a-text
@@ -224,6 +276,8 @@
           geometry="primitive: plane; height: 0.25; width: 1.5"
           material="color: #00BFFF"
           position="0 -0.4 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
           onclick="setRole('konflikt')"
         >
           <a-text
@@ -240,6 +294,8 @@
           geometry="primitive: plane; height: 0.25; width: 1.5"
           material="color: #00BFFF"
           position="0 -0.7 0.01"
+          event-set__enter="_event: mouseenter; material.color: #007ACC"
+          event-set__leave="_event: mouseleave; material.color: #00BFFF"
           onclick="setRole('telefon')"
         >
           <a-text
@@ -251,6 +307,7 @@
           ></a-text>
         </a-entity>
 
+        <!-- Vereinfachter Anruf-Button -->
         <a-entity
           id="simpleCallButton"
           class="clickable"
@@ -262,6 +319,9 @@
             height="0.4"
             color="#28a745"
             material="shader: flat"
+            geometry="primitive: plane"
+            event-set__enter="_event: mouseenter; material.color: #218838"
+            event-set__leave="_event: mouseleave; material.color: #28a745"
           >
             <a-text
               value="📞 +43 660 3262626 anrufen"
@@ -276,6 +336,216 @@
     </a-scene>
 
     <div id="log">💬 Lucy wartet auf deine Stimme...</div>
+
+    <script>
+      const log = document.getElementById("log");
+      const blinker = document.getElementById("blinker");
+      const lucy = document.getElementById("lucy");
+      const recordButton = document.getElementById("recordButton");
+      const thinkingText = document.getElementById("thinkingText");
+      const listeningText = document.getElementById("listeningText");
+      const roleSelect = document.getElementById("roleSelect");
+
+      let mediaRecorder;
+      let audioChunks = [];
+      let micStream;
+      let isRecording = false;
+
+      function append(msg) {
+        log.innerHTML += `<div>${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+      }
+
+      async function playVoiceFromText(text) {
+        try {
+          const response = await fetch("/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          lucy.emit("speak");
+          thinkingText.setAttribute("visible", false);
+          audio.play();
+          audio.onended = () => lucy.emit("stopspeak");
+        } catch (error) {
+          console.error("TTS-Fehler:", error);
+          append("⚠️ Konnte Antwort nicht abspielen.");
+          thinkingText.setAttribute("visible", false);
+        }
+      }
+
+      function speak(text) {
+        playVoiceFromText(text);
+      }
+
+      async function startRecording() {
+        if (isRecording) return;
+        isRecording = true;
+
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaRecorder = new MediaRecorder(micStream, {
+            mimeType: "audio/webm",
+          });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+
+          mediaRecorder.onstop = async () => {
+            isRecording = false;
+            append("🛑 Aufnahme gestoppt.");
+            blinker.style.display = "none";
+            listeningText.setAttribute("visible", false);
+            if (micStream) micStream.getTracks().forEach((t) => t.stop());
+
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "speech.webm");
+
+            append("⏳ Sende Audio an Server...");
+            thinkingText.setAttribute("visible", true);
+
+            try {
+              const role = roleSelect.value || "recruiter";
+              const res = await fetch(`/upload-audio?role=${role}`, {
+                method: "POST",
+                body: formData,
+              });
+
+              const data = await res.json();
+              const reply = data.response || data.error || "Fehler bei Antwort";
+
+              append("🤖 <b>Lucy:</b> " + reply);
+              speak(reply);
+            } catch (error) {
+              console.error("Upload-Fehler:", error);
+              append("❌ Fehler beim Senden oder Verarbeiten.");
+              thinkingText.setAttribute("visible", false);
+            }
+          };
+
+          mediaRecorder.start();
+          blinker.style.display = "block";
+          listeningText.setAttribute("visible", true);
+          append("🎙️ Aufnahme läuft...");
+        } catch (err) {
+          isRecording = false;
+          console.error("Mikrofon-Fehler:", err);
+        }
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      }
+
+      // Web: Maus & Trigger halten
+      recordButton.addEventListener("mousedown", startRecording);
+      recordButton.addEventListener("mouseup", stopRecording);
+      recordButton.addEventListener("mouseleave", stopRecording);
+      recordButton.addEventListener("triggerdown", startRecording);
+      recordButton.addEventListener("triggerup", stopRecording);
+
+      // Web: Leertaste
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") startRecording();
+      });
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") stopRecording();
+      });
+
+      // VR: Lucy kleiner machen
+      AFRAME.scenes[0].addEventListener("enter-vr", () => {
+        lucy.setAttribute("scale", "0.5 0.5 0.5");
+      });
+      AFRAME.scenes[0].addEventListener("exit-vr", () => {
+        lucy.setAttribute("scale", "1.5 1.5 1.5");
+      });
+
+      // Rollenauswahl aus Menü
+      function setRole(role) {
+        roleSelect.value = role;
+        append(`🎭 Rolle geändert: ${role}`);
+
+        const isPhoneMode = role === "telefon";
+        const callBtn = document.getElementById("simpleCallButton");
+        const lucyEl = document.getElementById("lucy");
+
+        // Sichere Steuerung mit Timeout-Fallback für VR
+        if (isPhoneMode) {
+          callBtn.setAttribute("visible", true);
+          lucyEl.setAttribute("visible", false);
+          // zusätzlich skaliere Lucy auf 0 (VR-Fallback)
+          lucyEl.setAttribute("scale", "0 0 0");
+        } else {
+          callBtn.setAttribute("visible", false);
+          lucyEl.setAttribute("visible", true);
+          lucyEl.setAttribute("scale", "1.5 1.5 1.5");
+        }
+      }
+
+      // 📞 Klingelton abspielen
+      function playRingtone() {
+        return new Promise((resolve) => {
+          const audio = new Audio(
+            "https://raw.githubusercontent.com/Sleek-AR/lucy-simulator/main/public/sounds/ringtone-126505.mp3"
+          );
+
+          // 👉 Versuche abzuspielen und fange Fehler ab (z. B. durch Autoplay-Sperre)
+          audio
+            .play()
+            .then(() => {
+              append("🔔 Klingelton startet...");
+            })
+            .catch((err) => {
+              console.warn("Autoplay blockiert:", err);
+              append(
+                "⚠️ Klingelton konnte nicht abgespielt werden (Autoplay-Sperre)."
+              );
+              resolve(); // trotzdem nach vorne weitermachen
+            });
+
+          // ⏱ Klingelton nach 6 Sekunden beenden
+          setTimeout(() => {
+            audio.pause();
+            resolve();
+          }, 6000);
+        });
+      }
+
+      // 🟢 Start-Button für Telefonat
+      document
+        .getElementById("simpleCallButton")
+        .addEventListener("click", async () => {
+          append("📞 Wähle: +43 660 3262626");
+
+          try {
+            await playRingtone();
+            append("📶 Verbindung wird hergestellt...");
+
+            setTimeout(() => {
+              append("✅ Verbindung aufgebaut!");
+              speak(
+                "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
+              );
+              startRecording();
+            }, 10000);
+          } catch (error) {
+            console.warn("Klingelton konnte nicht abgespielt werden:", error);
+            append("⚠️ Klingelton blockiert. Starte direkt mit Begrüßung.");
+
+            speak(
+              "Willkommen bei Möbel Berger, mein Name ist Frau Berger. Wie kann ich Ihnen helfen?"
+            );
+            startRecording();
+          }
+        });
+    </script>
   </body>
 </html>
-
