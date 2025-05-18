@@ -314,7 +314,8 @@
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
 
-        if (role === "telefon") {
+        // Sicherstellen, dass setPhoneRole geladen ist
+        if (role === "telefon" && typeof window.setPhoneRole === "function") {
           window.setPhoneRole();
         } else {
           const callBtn = document.getElementById("simpleCallButton");
