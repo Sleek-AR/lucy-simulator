@@ -331,13 +331,21 @@
         }
       }
     </script>
-
+    
     <script type="module">
-  import { initPhoneTraining } from "./js/phone-training.js";
-  import { createPhoneUI } from "./js/phone-ui/phone-ui.js";
+      import { initPhoneTraining } from "./js/phone-training.js";
+      import { createPhoneUI } from "./js/phone-ui/phone-ui.js";
 
-  initPhoneTraining({ startRecording, speak, append });
-</script>
+      // UI erzeugen (damit window.togglePhoneUI funktioniert)
+      createPhoneUI({
+        onCall: (number) => {
+          console.log("Nummer gewählt:", number);
+          document.getElementById("simpleCallButton").click(); // simuliert Klick auf Anrufbutton
+        },
+      });
+
+      initPhoneTraining({ startRecording, speak, append });
+    </script>
   </body>
 </html>
 
