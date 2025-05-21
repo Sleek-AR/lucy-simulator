@@ -528,7 +528,8 @@
 
     <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
-    <script>
+        <script>
+      const BASE_URL = "https://lucy-simulator.onrender.com";
       const log = document.getElementById("log");
       const blinker = document.getElementById("blinker");
       const lucy = document.getElementById("lucy");
@@ -543,7 +544,7 @@
       let audioChunks = [];
       let micStream;
       let isRecording = false;
-      let activeRole = "lucy"; // Standard
+      let activeRole = "lucy";
 
       function selectActiveRole(role) {
         activeRole = role;
@@ -557,7 +558,7 @@
 
       async function playVoiceFromText(text) {
         try {
-          const response = await fetch("/tts", {
+          const response = await fetch(`${BASE_URL}/tts`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text, role: activeRole }),
@@ -584,10 +585,9 @@
       function speakWithRole(role, text) {
         const name = role === "paul" ? "Paul" : "Lucy";
         const target = document.getElementById(role);
-
         updateFeedback(role, "thinking");
 
-        fetch("/tts", {
+        fetch(`${BASE_URL}/tts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, role }),
@@ -596,9 +596,7 @@
           .then((blob) => {
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
-
             target?.emit("speak");
-
             audio.play();
             audio.onended = () => {
               target?.emit("stopspeak");
@@ -612,13 +610,10 @@
         const listeningLucy = document.getElementById("listeningText");
         const thinkingPaul = document.getElementById("thinkingTextPaul");
         const listeningPaul = document.getElementById("listeningTextPaul");
-
-        // Alle ausblenden
         thinkingLucy.setAttribute("visible", false);
         listeningLucy.setAttribute("visible", false);
         thinkingPaul.setAttribute("visible", false);
         listeningPaul.setAttribute("visible", false);
-
         if (role === "lucy") {
           if (state === "thinking") thinkingLucy.setAttribute("visible", true);
           if (state === "listening")
@@ -634,7 +629,6 @@
         if (isRecording) return;
         isRecording = true;
         updateFeedback(activeRole, "listening");
-
         try {
           micStream = await navigator.mediaDevices.getUserMedia({
             audio: true,
@@ -643,32 +637,28 @@
             mimeType: "audio/webm",
           });
           audioChunks = [];
-
           mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-
           mediaRecorder.onstop = async () => {
             isRecording = false;
             append("🛑 Aufnahme gestoppt.");
             blinker.style.display = "none";
             updateFeedback(activeRole, "off");
             if (micStream) micStream.getTracks().forEach((t) => t.stop());
-
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
             const formData = new FormData();
             formData.append("audio", audioBlob, "speech.webm");
-
             append("⏳ Sende Audio an Server...");
             updateFeedback(activeRole, "thinking");
-
             try {
-              const res = await fetch(`/upload-audio?role=${activeRole}`, {
-                method: "POST",
-                body: formData,
-              });
-
+              const res = await fetch(
+                `${BASE_URL}/upload-audio?role=${activeRole}`,
+                {
+                  method: "POST",
+                  body: formData,
+                }
+              );
               const data = await res.json();
               const reply = data.response || data.error || "Fehler bei Antwort";
-
               append(`🤖 <b>${activeRole}:</b> ` + reply);
               speak(reply);
             } catch (error) {
@@ -677,7 +667,6 @@
               updateFeedback(activeRole, "off");
             }
           };
-
           mediaRecorder.start();
           blinker.style.display = "block";
           updateFeedback(activeRole, "listening");
@@ -694,55 +683,34 @@
         }
       }
 
-      // 🔴 Aufnahmebutton Lucy
-      recordButtonLucy.addEventListener("mousedown", () => {
-        selectActiveRole("lucy");
-        recordButtonLucy.setAttribute("material", { color: "#FF0000" });
-        startRecording();
-      });
-      recordButtonLucy.addEventListener("mouseup", () => {
-        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
-        stopRecording();
-      });
-      recordButtonLucy.addEventListener("mouseleave", () => {
-        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
-        stopRecording();
-      });
-      recordButtonLucy.addEventListener("triggerdown", () => {
-        selectActiveRole("lucy");
-        recordButtonLucy.setAttribute("material", { color: "#FF0000" });
-        startRecording();
-      });
-      recordButtonLucy.addEventListener("triggerup", () => {
-        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
-        stopRecording();
-      });
+      function bindButton(button, role) {
+        button.addEventListener("mousedown", () => {
+          selectActiveRole(role);
+          button.setAttribute("material", { color: "#FF0000" });
+          startRecording();
+        });
+        button.addEventListener("mouseup", () => {
+          button.setAttribute("material", { color: "#00BFFF" });
+          stopRecording();
+        });
+        button.addEventListener("mouseleave", () => {
+          button.setAttribute("material", { color: "#00BFFF" });
+          stopRecording();
+        });
+        button.addEventListener("triggerdown", () => {
+          selectActiveRole(role);
+          button.setAttribute("material", { color: "#FF0000" });
+          startRecording();
+        });
+        button.addEventListener("triggerup", () => {
+          button.setAttribute("material", { color: "#00BFFF" });
+          stopRecording();
+        });
+      }
 
-      // 🔶 Aufnahmebutton Paul
-      recordButtonPaul.addEventListener("mousedown", () => {
-        selectActiveRole("paul");
-        recordButtonPaul.setAttribute("material", { color: "#FF0000" });
-        startRecording();
-      });
-      recordButtonPaul.addEventListener("mouseup", () => {
-        recordButtonPaul.setAttribute("material", { color: "#00BFFF" });
-        stopRecording();
-      });
-      recordButtonPaul.addEventListener("mouseleave", () => {
-        recordButtonPaul.setAttribute("material", { color: "00BFFF" });
-        stopRecording();
-      });
-      recordButtonPaul.addEventListener("triggerdown", () => {
-        selectActiveRole("paul");
-        recordButtonPaul.setAttribute("material", { color: "#FF0000" });
-        startRecording();
-      });
-      recordButtonPaul.addEventListener("triggerup", () => {
-        recordButtonPaul.setAttribute("material", { color: "#00BFFF" });
-        stopRecording();
-      });
+      bindButton(recordButtonLucy, "lucy");
+      bindButton(recordButtonPaul, "paul");
 
-      // ⌨️ Leertaste (aktiv abhängig)
       document.addEventListener("keydown", (e) => {
         if (e.code === "Space") {
           const btn =
@@ -756,38 +724,26 @@
         if (e.code === "Space") {
           const btn =
             activeRole === "paul" ? recordButtonPaul : recordButtonLucy;
-          btn.setAttribute("material", {
-            color: activeRole === "paul" ? "#f57f17" : "#00BFFF",
-          });
+          btn.setAttribute("material", { color: "#00BFFF" });
           stopRecording();
         }
       });
 
-      // 🔄 Rollenauswahl bei VR-Menü
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
-
         const isPhoneMode = role === "telefon";
         const callBtn = document.getElementById("simpleCallButton");
         const lucyEl = document.getElementById("lucy");
-
-        if (isPhoneMode) {
-          callBtn.setAttribute("visible", true);
-          lucyEl.setAttribute("visible", false);
-          lucyEl.setAttribute("scale", "0 0 0");
-        } else {
-          callBtn.setAttribute("visible", false);
-          lucyEl.setAttribute("visible", true);
-          lucyEl.setAttribute("scale", "1.5 1.5 1.5");
-        }
+        callBtn.setAttribute("visible", isPhoneMode);
+        lucyEl.setAttribute("visible", !isPhoneMode);
+        lucyEl.setAttribute("scale", isPhoneMode ? "0 0 0" : "1.5 1.5 1.5");
       }
 
       function selectRole(buttonEntity, role) {
         setRole(role);
         const originalColor = buttonEntity.getAttribute("material").color;
         buttonEntity.setAttribute("material", { color: "#00FF00" });
-
         setTimeout(() => {
           buttonEntity.setAttribute("material", "color", originalColor);
         }, 500);
