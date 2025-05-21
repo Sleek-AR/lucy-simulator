@@ -27,7 +27,7 @@ function loadPrompt(role = "lucy") {
   }
 }
 
-app.post("/upload", upload.single("audio"), async (req, res) => {
+app.post("/upload-audio", upload.single("audio"), async (req, res) => {
   try {
     const role = req.query.role || "lucy"; // 👈 aktiver Sprecher (Lucy oder Paul)
     const inputPath = req.file.path;
