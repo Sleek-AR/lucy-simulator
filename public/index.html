@@ -451,26 +451,40 @@
       }
 
       // Web: Maus & Trigger halten
-      recordButton.addEventListener("mousedown", startRecording);
-      recordButton.addEventListener("mouseup", stopRecording);
-      recordButton.addEventListener("mouseleave", stopRecording);
-      recordButton.addEventListener("triggerdown", startRecording);
-      recordButton.addEventListener("triggerup", stopRecording);
+      recordButton.addEventListener("mousedown", () => {
+        recordButton.setAttribute("material", { color: "#FF0000" }); // rot
+        startRecording();
+      });
+      recordButton.addEventListener("mouseup", () => {
+        recordButton.setAttribute("material", { color: "#00BFFF" }); // zurück zu blau
+        stopRecording();
+      });
+      recordButton.addEventListener("mouseleave", () => {
+        recordButton.setAttribute("material", { color: "#00BFFF" });
+        stopRecording();
+      });
+      recordButton.addEventListener("triggerdown", () => {
+        recordButton.setAttribute("material", { color: "#FF0000" });
+        startRecording();
+      });
+      recordButton.addEventListener("triggerup", () => {
+        recordButton.setAttribute("material", { color: "#00BFFF" });
+        stopRecording();
+      });
 
       // Web: Leertaste
       document.addEventListener("keydown", (e) => {
-        if (e.code === "Space") startRecording();
-      });
-      document.addEventListener("keyup", (e) => {
-        if (e.code === "Space") stopRecording();
+        if (e.code === "Space") {
+          recordButton.setAttribute("material", { color: "#FF0000" });
+          startRecording();
+        }
       });
 
-      // VR: Lucy kleiner machen
-      AFRAME.scenes[0].addEventListener("enter-vr", () => {
-        lucy.setAttribute("scale", "0.5 0.5 0.5");
-      });
-      AFRAME.scenes[0].addEventListener("exit-vr", () => {
-        lucy.setAttribute("scale", "1.5 1.5 1.5");
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+          recordButton.setAttribute("material", { color: "#00BFFF" });
+          stopRecording();
+        }
       });
 
            // Rollenauswahl aus Menü
