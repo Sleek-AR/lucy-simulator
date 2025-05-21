@@ -731,7 +731,7 @@
 
       function setRole(role) {
         roleSelect.value = role;
-        activeRole = role; // ✅ Diese Zeile ist entscheidend
+        activeRole = role; 
         append(`🎭 Rolle geändert: ${role}`);
         const isPhoneMode = role === "telefon";
         const callBtn = document.getElementById("simpleCallButton");
