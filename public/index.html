@@ -247,7 +247,7 @@
           position="0 0.2 0.01"
           event-set__enter="_event: mouseenter; material.color: #007ACC"
           event-set__leave="_event: mouseleave; material.color: #00BFFF"
-          onclick="setRole('recruiter')"
+          onclick="selectRole(this,'recruiter')"
         >
           <a-text
             value="Lucy Recruiter"
@@ -265,7 +265,7 @@
           position="0 -0.1 0.01"
           event-set__enter="_event: mouseenter; material.color: #007ACC"
           event-set__leave="_event: mouseleave; material.color: #00BFFF"
-          onclick="setRole('bewerberin')"
+          onclick="selectRole(this,'bewerberin')"
         >
           <a-text
             value="Lucy Bewerberin"
@@ -283,7 +283,7 @@
           position="0 -0.4 0.01"
           event-set__enter="_event: mouseenter; material.color: #007ACC"
           event-set__leave="_event: mouseleave; material.color: #00BFFF"
-          onclick="setRole('konflikt')"
+          onclick="selectRole(this,'konflikt')"
         >
           <a-text
             value="Konflikttraining"
@@ -301,7 +301,7 @@
           position="0 -0.7 0.01"
           event-set__enter="_event: mouseenter; material.color: #007ACC"
           event-set__leave="_event: mouseleave; material.color: #00BFFF"
-          onclick="setRole('telefon')"
+          onclick="selectRole(this,'telefon')"
         >
           <a-text
             value="Telefontraining"
@@ -310,6 +310,32 @@
             width="1.2"
             position="0 0 0.01"
           ></a-text>
+        </a-entity>
+
+        <!-- Vereinfachter Anruf-Button -->
+        <a-entity
+          id="simpleCallButton"
+          class="clickable"
+          position="-2 0 2"
+          visible="false"
+        >
+          <a-plane
+            width="1.8"
+            height="0.4"
+            color="#28a745"
+            material="shader: flat"
+            geometry="primitive: plane"
+            event-set__enter="_event: mouseenter; material.color: #218838"
+            event-set__leave="_event: mouseleave; material.color: #28a745"
+          >
+            <a-text
+              value="📞 +43 660 3262626 anrufen"
+              align="center"
+              color="#ffffff"
+              width="2.5"
+              position="0 0 0.01"
+            ></a-text>
+          </a-plane>
         </a-entity>
       </a-entity>
     </a-scene>
@@ -447,7 +473,7 @@
         lucy.setAttribute("scale", "1.5 1.5 1.5");
       });
 
-      // Rollenauswahl aus Menü
+           // Rollenauswahl aus Menü
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
@@ -456,11 +482,9 @@
         const callBtn = document.getElementById("simpleCallButton");
         const lucyEl = document.getElementById("lucy");
 
-        // Sichere Steuerung mit Timeout-Fallback für VR
         if (isPhoneMode) {
           callBtn.setAttribute("visible", true);
           lucyEl.setAttribute("visible", false);
-          // zusätzlich skaliere Lucy auf 0 (VR-Fallback)
           lucyEl.setAttribute("scale", "0 0 0");
         } else {
           callBtn.setAttribute("visible", false);
@@ -468,6 +492,19 @@
           lucyEl.setAttribute("scale", "1.5 1.5 1.5");
         }
       }
+
+      // ✅ Auswahl auf Grün schalten von setRole()
+      function selectRole(buttonEntity, role) {
+        setRole(role);
+
+        const originalColor = buttonEntity.getAttribute("material").color;
+        buttonEntity.setAttribute("material", { color: "#00FF00" });
+
+        setTimeout(() => {
+          buttonEntity.setAttribute("material", "color", originalColor);
+        }, 500);
+      }
+
     </script>
   </body>
 </html>
