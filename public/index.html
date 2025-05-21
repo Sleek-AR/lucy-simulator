@@ -731,11 +731,13 @@
 
       function setRole(role) {
         roleSelect.value = role;
-        activeRole = role; 
+        activeRole = lucy; 
         append(`🎭 Rolle geändert: ${role}`);
+        
         const isPhoneMode = role === "telefon";
         const callBtn = document.getElementById("simpleCallButton");
         const lucyEl = document.getElementById("lucy");
+        
         callBtn.setAttribute("visible", isPhoneMode);
         lucyEl.setAttribute("visible", !isPhoneMode);
         lucyEl.setAttribute("scale", isPhoneMode ? "0 0 0" : "1.5 1.5 1.5");
