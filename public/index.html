@@ -16,26 +16,66 @@
         },
       });
 
-        AFRAME.registerComponent("move-rig-with-thumbstick", {
-          schema: { speed: { type: "number", default: 0.1 } },
-          init: function () {
-            this.rig = document.querySelector("#cameraRig");
-            this.camera = document.querySelector("#camera");
-            this.direction = new THREE.Vector3();
+AFRAME.registerComponent("move-rig-with-thumbstick", {
+        schema: { speed: { type: "number", default: 0.1 } },
+        init: function () {
+          this.rig = document.querySelector("#cameraRig");
+          this.camera = document.querySelector("#camera");
+          this.direction = new THREE.Vector3();
 
-            this.el.addEventListener("thumbstickmoved", (e) => {
-              this.direction.set(e.detail.x, 0, e.detail.y); // Keine Höhenbewegung
-              this.direction.multiplyScalar(this.data.speed);
-              const camQuat = this.camera.object3D.quaternion;
-              this.direction.applyQuaternion(camQuat);
+          this.el.addEventListener("thumbstickmoved", (e) => {
+            this.direction.set(e.detail.x, 0, e.detail.y); // Keine Höhenbewegung
+            this.direction.multiplyScalar(this.data.speed);
+            const camQuat = this.camera.object3D.quaternion;
+            this.direction.applyQuaternion(camQuat);
 
-              const newPosition = this.rig.object3D.position.clone().add(this.direction);
-              newPosition.y = 0.8; // feste Augenhöhe
+            const newPosition = this.rig.object3D.position
+              .clone()
+              .add(this.direction);
+            newPosition.y = 0.8; // feste Augenhöhe
 
-              this.rig.object3D.position.copy(newPosition);
+            this.rig.object3D.position.copy(newPosition);
+          });
+        },
+      });
+
+      AFRAME.registerComponent("lip-sync", {
+        init: function () {
+          const el = this.el;
+          this.mouthMesh = null;
+          this.mouthIndex = null;
+
+          el.addEventListener("model-loaded", () => {
+            const mesh = el.getObject3D("mesh");
+            mesh.traverse((node) => {
+              if (
+                node.isMesh &&
+                node.morphTargetDictionary &&
+                node.morphTargetInfluences
+              ) {
+                const index = node.morphTargetDictionary["mouthOpen"];
+                if (index !== undefined) {
+                  this.mouthMesh = node;
+                  this.mouthIndex = index;
+                }
+              }
             });
-          },
-        });
+          });
+
+          el.addEventListener("speak", () => {
+            if (this.mouthMesh && this.mouthIndex !== null) {
+              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 1;
+            }
+          });
+
+          el.addEventListener("stopspeak", () => {
+            if (this.mouthMesh && this.mouthIndex !== null) {
+              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0;
+            }
+          });
+        },
+      });
+
 
       // Bewegung per Tastatur nur in Webmodus aktivieren
       window.addEventListener("DOMContentLoaded", () => {
@@ -167,7 +207,7 @@
         position="0 0 -2"
         scale="1.5 1.5 1.5"
         visible="true"
-        animation__speak="property: scale; to: 1.55 1.45 1.55; dir: alternate; dur: 200; loop: true; startEvents: speak; pauseEvents: stopspeak"
+        lip-sync
       ></a-entity>
 
       <!-- Office -->
