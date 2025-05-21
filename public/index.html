@@ -265,7 +265,7 @@
 
       <!-- Aufnahmebutton Lucy -->
       <a-entity
-        id="recordButton"
+        id="recordButtonLucy"
         geometry="primitive: plane; height: 0.3; width: 1.8"
         material="color: #00BFFF"
         position="0 1 -1.5"
@@ -353,7 +353,7 @@
 
       <!-- Aufnahmebutton Paul -->
       <a-entity
-        id="recordButton"
+        id="recordButtonPaul"
         geometry="primitive: plane; height: 0.3; width: 1.8"
         material="color: #00BFFF"
         position="-6.0 1 -7.7"
@@ -532,7 +532,9 @@
       const log = document.getElementById("log");
       const blinker = document.getElementById("blinker");
       const lucy = document.getElementById("lucy");
-      const recordButton = document.getElementById("recordButton");
+      const paul = document.getElementById("paul");
+      const recordButtonLucy = document.getElementById("recordButtonLucy");
+      const recordButtonPaul = document.getElementById("recordButtonPaul");
       const thinkingText = document.getElementById("thinkingText");
       const listeningText = document.getElementById("listeningText");
       const roleSelect = document.getElementById("roleSelect");
@@ -541,7 +543,7 @@
       let audioChunks = [];
       let micStream;
       let isRecording = false;
-      let activeRole = "lucy"; // Standard: Lucy ist aktiv
+      let activeRole = "lucy"; // Standard
 
       function selectActiveRole(role) {
         activeRole = role;
@@ -606,25 +608,25 @@
       }
 
       function updateFeedback(role, state) {
-        const thinkingText = document.getElementById("thinkingText");
-        const listeningText = document.getElementById("listeningText");
-        const name = role === "paul" ? "Paul" : "Lucy";
+        const thinkingLucy = document.getElementById("thinkingText");
+        const listeningLucy = document.getElementById("listeningText");
+        const thinkingPaul = document.getElementById("thinkingTextPaul");
+        const listeningPaul = document.getElementById("listeningTextPaul");
 
-        if (state === "listening") {
-          listeningText.setAttribute(
-            "text",
-            "value",
-            `${name} nimmt dich gerade wahr...`
-          );
-          listeningText.setAttribute("visible", true);
-          thinkingText.setAttribute("visible", false);
-        } else if (state === "thinking") {
-          thinkingText.setAttribute("text", "value", `${name} denkt nach...`);
-          thinkingText.setAttribute("visible", true);
-          listeningText.setAttribute("visible", false);
-        } else {
-          thinkingText.setAttribute("visible", false);
-          listeningText.setAttribute("visible", false);
+        // Alle ausblenden
+        thinkingLucy.setAttribute("visible", false);
+        listeningLucy.setAttribute("visible", false);
+        thinkingPaul.setAttribute("visible", false);
+        listeningPaul.setAttribute("visible", false);
+
+        if (role === "lucy") {
+          if (state === "thinking") thinkingLucy.setAttribute("visible", true);
+          if (state === "listening")
+            listeningLucy.setAttribute("visible", true);
+        } else if (role === "paul") {
+          if (state === "thinking") thinkingPaul.setAttribute("visible", true);
+          if (state === "listening")
+            listeningPaul.setAttribute("visible", true);
         }
       }
 
@@ -648,7 +650,7 @@
             isRecording = false;
             append("🛑 Aufnahme gestoppt.");
             blinker.style.display = "none";
-            listeningText.setAttribute("visible", false);
+            updateFeedback(activeRole, "off");
             if (micStream) micStream.getTracks().forEach((t) => t.stop());
 
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
@@ -656,11 +658,10 @@
             formData.append("audio", audioBlob, "speech.webm");
 
             append("⏳ Sende Audio an Server...");
-            thinkingText.setAttribute("visible", true);
+            updateFeedback(activeRole, "thinking");
 
             try {
-              const role = activeRole;
-              const res = await fetch(`/upload-audio?role=${role}`, {
+              const res = await fetch(`/upload-audio?role=${activeRole}`, {
                 method: "POST",
                 body: formData,
               });
@@ -668,18 +669,18 @@
               const data = await res.json();
               const reply = data.response || data.error || "Fehler bei Antwort";
 
-              append("🤖 <b>Lucy:</b> " + reply);
+              append(`🤖 <b>${activeRole}:</b> ` + reply);
               speak(reply);
             } catch (error) {
               console.error("Upload-Fehler:", error);
               append("❌ Fehler beim Senden oder Verarbeiten.");
-              thinkingText.setAttribute("visible", false);
+              updateFeedback(activeRole, "off");
             }
           };
 
           mediaRecorder.start();
           blinker.style.display = "block";
-          listeningText.setAttribute("visible", true);
+          updateFeedback(activeRole, "listening");
           append("🎙️ Aufnahme läuft...");
         } catch (err) {
           isRecording = false;
@@ -693,44 +694,76 @@
         }
       }
 
-      // Web: Maus & Trigger halten
-      recordButton.addEventListener("mousedown", () => {
-        recordButton.setAttribute("material", { color: "#FF0000" }); // rot
+      // 🔴 Aufnahmebutton Lucy
+      recordButtonLucy.addEventListener("mousedown", () => {
+        selectActiveRole("lucy");
+        recordButtonLucy.setAttribute("material", { color: "#FF0000" });
         startRecording();
       });
-      recordButton.addEventListener("mouseup", () => {
-        recordButton.setAttribute("material", { color: "#00BFFF" }); // zurück zu blau
+      recordButtonLucy.addEventListener("mouseup", () => {
+        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
         stopRecording();
       });
-      recordButton.addEventListener("mouseleave", () => {
-        recordButton.setAttribute("material", { color: "#00BFFF" });
+      recordButtonLucy.addEventListener("mouseleave", () => {
+        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
         stopRecording();
       });
-      recordButton.addEventListener("triggerdown", () => {
-        recordButton.setAttribute("material", { color: "#FF0000" });
+      recordButtonLucy.addEventListener("triggerdown", () => {
+        selectActiveRole("lucy");
+        recordButtonLucy.setAttribute("material", { color: "#FF0000" });
         startRecording();
       });
-      recordButton.addEventListener("triggerup", () => {
-        recordButton.setAttribute("material", { color: "#00BFFF" });
+      recordButtonLucy.addEventListener("triggerup", () => {
+        recordButtonLucy.setAttribute("material", { color: "#00BFFF" });
         stopRecording();
       });
 
-      // Web: Leertaste
+      // 🔶 Aufnahmebutton Paul
+      recordButtonPaul.addEventListener("mousedown", () => {
+        selectActiveRole("paul");
+        recordButtonPaul.setAttribute("material", { color: "#FF0000" });
+        startRecording();
+      });
+      recordButtonPaul.addEventListener("mouseup", () => {
+        recordButtonPaul.setAttribute("material", { color: "#00BFFF" });
+        stopRecording();
+      });
+      recordButtonPaul.addEventListener("mouseleave", () => {
+        recordButtonPaul.setAttribute("material", { color: "00BFFF" });
+        stopRecording();
+      });
+      recordButtonPaul.addEventListener("triggerdown", () => {
+        selectActiveRole("paul");
+        recordButtonPaul.setAttribute("material", { color: "#FF0000" });
+        startRecording();
+      });
+      recordButtonPaul.addEventListener("triggerup", () => {
+        recordButtonPaul.setAttribute("material", { color: "#00BFFF" });
+        stopRecording();
+      });
+
+      // ⌨️ Leertaste (aktiv abhängig)
       document.addEventListener("keydown", (e) => {
         if (e.code === "Space") {
-          recordButton.setAttribute("material", { color: "#FF0000" });
+          const btn =
+            activeRole === "paul" ? recordButtonPaul : recordButtonLucy;
+          btn.setAttribute("material", { color: "#FF0000" });
           startRecording();
         }
       });
 
       document.addEventListener("keyup", (e) => {
         if (e.code === "Space") {
-          recordButton.setAttribute("material", { color: "#00BFFF" });
+          const btn =
+            activeRole === "paul" ? recordButtonPaul : recordButtonLucy;
+          btn.setAttribute("material", {
+            color: activeRole === "paul" ? "#f57f17" : "#00BFFF",
+          });
           stopRecording();
         }
       });
 
-      // Rollenauswahl aus Menü
+      // 🔄 Rollenauswahl bei VR-Menü
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
@@ -750,10 +783,8 @@
         }
       }
 
-      // ✅ Auswahl auf Grün schalten von setRole()
       function selectRole(buttonEntity, role) {
         setRole(role);
-
         const originalColor = buttonEntity.getAttribute("material").color;
         buttonEntity.setAttribute("material", { color: "#00FF00" });
 
@@ -761,30 +792,6 @@
           buttonEntity.setAttribute("material", "color", originalColor);
         }, 500);
       }
-
-      function updateFeedback(role, state) {
-        const thinkingLucy = document.getElementById("thinkingText");
-        const listeningLucy = document.getElementById("listeningText");
-        const thinkingPaul = document.getElementById("thinkingTextPaul");
-        const listeningPaul = document.getElementById("listeningTextPaul");
-
-        // Alle ausblenden
-        thinkingLucy.setAttribute("visible", false);
-        listeningLucy.setAttribute("visible", false);
-        thinkingPaul.setAttribute("visible", false);
-        listeningPaul.setAttribute("visible", false);
-
-        if (role === "lucy") {
-          if (state === "thinking") thinkingLucy.setAttribute("visible", true);
-          if (state === "listening")
-            listeningLucy.setAttribute("visible", true);
-        } else if (role === "paul") {
-          if (state === "thinking") thinkingPaul.setAttribute("visible", true);
-          if (state === "listening")
-            listeningPaul.setAttribute("visible", true);
-        }
-      }
     </script>
   </body>
 </html>
-
