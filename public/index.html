@@ -30,7 +30,7 @@
               this.direction.applyQuaternion(camQuat);
 
               const newPosition = this.rig.object3D.position.clone().add(this.direction);
-              newPosition.y = Math.max(newPosition.y, 0.1); // Mindesthöhe sicherstellen
+              newPosition.y = 0.8; // feste Augenhöhe
 
               this.rig.object3D.position.copy(newPosition);
             });
