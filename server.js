@@ -1,4 +1,4 @@
-// ✅ server.js (mit Whisper, GPT, TTS und dynamischen Prompts)
+// ✅ server.js (mit Whisper, GPT, TTS, dynamischen Prompts & Gesprächsverlauf)
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
@@ -28,7 +28,11 @@ function loadPrompt(role = "lucy") {
   }
 }
 
-// 🎙 Spracheingabe-Upload + GPT-Antwort
+// 📁 Verzeichnis für Gesprächsverläufe
+const conversationDir = path.join(__dirname, "conversations");
+if (!fs.existsSync(conversationDir)) fs.mkdirSync(conversationDir);
+
+// 🎙 Spracheingabe-Upload + GPT-Antwort mit Verlaufsspeicherung
 app.post('/upload-audio', upload.single('audio'), async (req, res) => {
   const role = req.query.role || "lucy"; // z. B. /upload-audio?role=konflikt
   const inputPath = req.file.path;
@@ -51,24 +55,37 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
     const userText = transcription.text;
     const promptText = loadPrompt(role);
 
+    // 🧠 Verlaufspfad & Laden
+    const conversationPath = path.join(conversationDir, `${role}.json`);
+    let history = [];
+
+    if (fs.existsSync(conversationPath)) {
+      const data = fs.readFileSync(conversationPath, "utf-8");
+      history = JSON.parse(data);
+    }
+
+    // ➕ Nutzerbeitrag anhängen
+    history.push({ role: "user", content: userText });
+
     const gptResponse = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
-        {
-          role: 'system',
-          content: promptText
-        },
-        {
-          role: 'user',
-          content: userText
-        }
+        { role: 'system', content: promptText },
+        ...history
       ]
     });
 
+    const assistantText = gptResponse.choices[0].message.content;
+    history.push({ role: "assistant", content: assistantText });
+
+    // 💾 Verlauf speichern
+    fs.writeFileSync(conversationPath, JSON.stringify(history, null, 2), "utf-8");
+
+    // Aufräumen
     fs.unlinkSync(inputPath);
     fs.unlinkSync(outputPath);
 
-    res.json({ response: gptResponse.choices[0].message.content });
+    res.json({ response: assistantText });
   } catch (error) {
     console.error('❌ Fehler bei /upload-audio:', error);
     res.status(500).json({ error: error.message || 'Verarbeitungsfehler' });
