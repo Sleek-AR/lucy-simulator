@@ -528,7 +528,7 @@
 
     <div id="log">💬 Lucy wartet auf deine Stimme...</div>
 
-        <script>
+    <script>
       const BASE_URL = "https://lucy-simulator.onrender.com";
       const log = document.getElementById("log");
       const blinker = document.getElementById("blinker");
@@ -650,9 +650,8 @@
             append("⏳ Sende Audio an Server...");
             updateFeedback(activeRole, "thinking");
             try {
-              const res = await fetch(
-                `${BASE_URL}/upload-audio?role=${activeRole}`,
-                {
+              const promptRole = roleSelect.value; // 👈 aktuelle Rollenauswahl aus dem Dropdown
+              const res = await fetch(`${BASE_URL}/upload-audio?role=${promptRole}`, {
                   method: "POST",
                   body: formData,
                 }
@@ -731,7 +730,7 @@
 
       function setRole(role) {
         roleSelect.value = role;
-        activeRole = lucy; 
+        activeRole = "lucy"; 
         append(`🎭 Rolle geändert: ${role}`);
         
         const isPhoneMode = role === "telefon";
