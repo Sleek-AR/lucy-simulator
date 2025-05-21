@@ -16,7 +16,7 @@
         },
       });
 
-AFRAME.registerComponent("move-rig-with-thumbstick", {
+      AFRAME.registerComponent("move-rig-with-thumbstick", {
         schema: { speed: { type: "number", default: 0.1 } },
         init: function () {
           this.rig = document.querySelector("#cameraRig");
@@ -39,7 +39,8 @@ AFRAME.registerComponent("move-rig-with-thumbstick", {
         },
       });
 
-      AFRAME.registerComponent("lip-sync", {
+
+            AFRAME.registerComponent("lip-sync", {
         init: function () {
           const el = this.el;
           this.mouthMesh = null;
@@ -47,24 +48,35 @@ AFRAME.registerComponent("move-rig-with-thumbstick", {
 
           el.addEventListener("model-loaded", () => {
             const mesh = el.getObject3D("mesh");
+            console.log("✅ Lucy-Modell geladen");
+
             mesh.traverse((node) => {
               if (
                 node.isMesh &&
+                node.name === "Wolf3D_Head" &&
                 node.morphTargetDictionary &&
                 node.morphTargetInfluences
               ) {
                 const index = node.morphTargetDictionary["mouthOpen"];
                 if (index !== undefined) {
+                  console.log(
+                    "🎯 mouthOpen gefunden in Wolf3D_Head, Index:",
+                    index
+                  );
                   this.mouthMesh = node;
                   this.mouthIndex = index;
                 }
               }
             });
+
+            if (!this.mouthMesh) {
+              console.warn("❌ 'Wolf3D_Head' mit mouthOpen nicht gefunden.");
+            }
           });
 
           el.addEventListener("speak", () => {
             if (this.mouthMesh && this.mouthIndex !== null) {
-              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 1;
+              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0.9; // realistischer Wert
             }
           });
 
