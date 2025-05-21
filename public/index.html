@@ -16,21 +16,26 @@
         },
       });
 
-      AFRAME.registerComponent("move-rig-with-thumbstick", {
-        schema: { speed: { type: "number", default: 0.1 } },
-        init: function () {
-          this.rig = document.querySelector("#cameraRig");
-          this.camera = document.querySelector("#camera");
-          this.direction = new THREE.Vector3();
-          this.el.addEventListener("thumbstickmoved", (e) => {
-            this.direction.set(e.detail.x, 0, e.detail.y);
-            this.direction.multiplyScalar(this.data.speed);
-            const camQuat = this.camera.object3D.quaternion;
-            this.direction.applyQuaternion(camQuat);
-            this.rig.object3D.position.add(this.direction);
-          });
-        },
-      });
+        AFRAME.registerComponent("move-rig-with-thumbstick", {
+          schema: { speed: { type: "number", default: 0.1 } },
+          init: function () {
+            this.rig = document.querySelector("#cameraRig");
+            this.camera = document.querySelector("#camera");
+            this.direction = new THREE.Vector3();
+
+            this.el.addEventListener("thumbstickmoved", (e) => {
+              this.direction.set(e.detail.x, 0, e.detail.y); // Keine Höhenbewegung
+              this.direction.multiplyScalar(this.data.speed);
+              const camQuat = this.camera.object3D.quaternion;
+              this.direction.applyQuaternion(camQuat);
+
+              const newPosition = this.rig.object3D.position.clone().add(this.direction);
+              newPosition.y = Math.max(newPosition.y, 0.1); // Mindesthöhe sicherstellen
+
+              this.rig.object3D.position.copy(newPosition);
+            });
+          },
+        });
 
       // Bewegung per Tastatur nur in Webmodus aktivieren
       window.addEventListener("DOMContentLoaded", () => {
