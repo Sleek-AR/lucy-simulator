@@ -275,6 +275,40 @@
         class="clickable"
       ></a-entity>
 
+      <!-- Denktext -->
+      <a-entity
+        id="thinkingText"
+        text="value: Lucy denkt nach...; align: center; color: #555"
+        position="0 3.2 -2"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        ></a-animation>
+      </a-entity>
+
+      <!-- Hörtext -->
+      <a-entity
+        id="listeningText"
+        text="value: Lucy nimmt dich gerade wahr...; align: center; color: #f00"
+        position="0 2.9 -2"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        ></a-animation>
+      </a-entity>
+
       <!-- Paul -->
       <a-entity
         id="paul"
@@ -330,6 +364,42 @@
         class="clickable"
       ></a-entity>
 
+      <!-- Denktext Paul -->
+      <a-entity
+        id="thinkingTextPaul"
+        text="value: Paul denkt nach...; align: center; color: #555"
+        position="-6.0 2.9 -7.7"
+        rotation="0 50 0"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        ></a-animation>
+      </a-entity>
+
+      <!-- Hörtext Paul -->
+      <a-entity
+        id="listeningTextPaul"
+        text="value: Paul nimmt dich wahr...; align: center; color: #f00"
+        position="-6.0 2.9 -7.7"
+        rotation="0 50 0"
+        visible="false"
+      >
+        <a-animation
+          attribute="material.opacity"
+          from="0.3"
+          to="1"
+          dur="1000"
+          direction="alternate"
+          repeat="indefinite"
+        ></a-animation>
+      </a-entity>
+
       <!-- Office -->
       <a-entity
         gltf-model="#officeSet"
@@ -337,40 +407,6 @@
         scale="0.7 0.7 0.7"
         rotation="0 0 0"
       ></a-entity>
-
-      <!-- Denktext -->
-      <a-entity
-        id="thinkingText"
-        text="value: Lucy denkt nach...; align: center; color: #555"
-        position="0 3.2 -2"
-        visible="false"
-      >
-        <a-animation
-          attribute="material.opacity"
-          from="0.3"
-          to="1"
-          dur="1000"
-          direction="alternate"
-          repeat="indefinite"
-        ></a-animation>
-      </a-entity>
-
-      <!-- Hörtext -->
-      <a-entity
-        id="listeningText"
-        text="value: Lucy nimmt dich gerade wahr...; align: center; color: #f00"
-        position="0 2.9 -2"
-        visible="false"
-      >
-        <a-animation
-          attribute="material.opacity"
-          from="0.3"
-          to="1"
-          dur="1000"
-          direction="alternate"
-          repeat="indefinite"
-        ></a-animation>
-      </a-entity>
 
       <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
@@ -728,3 +764,4 @@
     </script>
   </body>
 </html>
+
