@@ -40,53 +40,57 @@
       });
 
 
-            AFRAME.registerComponent("lip-sync", {
-        init: function () {
-          const el = this.el;
-          this.mouthMesh = null;
-          this.mouthIndex = null;
+    AFRAME.registerComponent('lip-sync', {
+      init: function () {
+        const el = this.el;
+        this.mouthMesh = null;
+        this.mouthIndex = null;
+        this.speaking = false;
+        this.interval = null;
 
-          el.addEventListener("model-loaded", () => {
-            const mesh = el.getObject3D("mesh");
-            console.log("✅ Lucy-Modell geladen");
-
-            mesh.traverse((node) => {
-              if (
-                node.isMesh &&
-                node.name === "Wolf3D_Head" &&
-                node.morphTargetDictionary &&
-                node.morphTargetInfluences
-              ) {
-                const index = node.morphTargetDictionary["mouthOpen"];
-                if (index !== undefined) {
-                  console.log(
-                    "🎯 mouthOpen gefunden in Wolf3D_Head, Index:",
-                    index
-                  );
-                  this.mouthMesh = node;
-                  this.mouthIndex = index;
-                }
+        el.addEventListener('model-loaded', () => {
+          const mesh = el.getObject3D('mesh');
+          mesh.traverse((node) => {
+            if (
+              node.isMesh &&
+              node.name === "Wolf3D_Head" &&
+              node.morphTargetDictionary &&
+              node.morphTargetInfluences
+            ) {
+              const index = node.morphTargetDictionary['mouthOpen'];
+              if (index !== undefined) {
+                this.mouthMesh = node;
+                this.mouthIndex = index;
               }
-            });
-
-            if (!this.mouthMesh) {
-              console.warn("❌ 'Wolf3D_Head' mit mouthOpen nicht gefunden.");
             }
           });
+        });
 
-          el.addEventListener("speak", () => {
-            if (this.mouthMesh && this.mouthIndex !== null) {
-              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0.9; // realistischer Wert
-            }
-          });
+        // Startet rhythmische Mundbewegung
+        el.addEventListener('speak', () => {
+          if (!this.mouthMesh || this.mouthIndex === null) return;
+          if (this.speaking) return;
+          this.speaking = true;
 
-          el.addEventListener("stopspeak", () => {
-            if (this.mouthMesh && this.mouthIndex !== null) {
-              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0;
-            }
-          });
-        },
-      });
+          this.interval = setInterval(() => {
+            const t = Date.now() % 600; // periodisch
+            const open = Math.abs(Math.sin(t / 100)) * 0.9; // animierte Öffnung
+            this.mouthMesh.morphTargetInfluences[this.mouthIndex] = open;
+          }, 60); // ca. 16x pro Sekunde
+        });
+
+        // Stoppt die Bewegung und schließt den Mund
+        el.addEventListener('stopspeak', () => {
+          if (this.interval) clearInterval(this.interval);
+          this.interval = null;
+          this.speaking = false;
+
+          if (this.mouthMesh && this.mouthIndex !== null) {
+            this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0;
+          }
+        });
+      }
+    });
 
 
       // Bewegung per Tastatur nur in Webmodus aktivieren
