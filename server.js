@@ -92,16 +92,21 @@ app.post('/upload-audio', upload.single('audio'), async (req, res) => {
   }
 });
 
-// 🔊 TTS-Ausgabe
 app.post('/tts', async (req, res) => {
-  const { text } = req.body;
+  const { text, role } = req.body;
+
+  // Automatische Stimmwahl je nach Rolle
+  let voice = "nova"; // Standard: weiblich
+  if (role === "paul") voice = "onyx";
+
   try {
     const ttsResponse = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "nova",
+      voice: voice,
       input: text,
       response_format: "mp3"
     });
+
     res.setHeader('Content-Type', 'audio/mpeg');
     ttsResponse.body.pipe(res);
   } catch (error) {
@@ -109,6 +114,7 @@ app.post('/tts', async (req, res) => {
     res.status(500).json({ error: 'TTS fehlgeschlagen' });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`🚀 Server läuft auf http://localhost:${port}`);
