@@ -761,6 +761,29 @@
           buttonEntity.setAttribute("material", "color", originalColor);
         }, 500);
       }
+
+      function updateFeedback(role, state) {
+        const thinkingLucy = document.getElementById("thinkingText");
+        const listeningLucy = document.getElementById("listeningText");
+        const thinkingPaul = document.getElementById("thinkingTextPaul");
+        const listeningPaul = document.getElementById("listeningTextPaul");
+
+        // Alle ausblenden
+        thinkingLucy.setAttribute("visible", false);
+        listeningLucy.setAttribute("visible", false);
+        thinkingPaul.setAttribute("visible", false);
+        listeningPaul.setAttribute("visible", false);
+
+        if (role === "lucy") {
+          if (state === "thinking") thinkingLucy.setAttribute("visible", true);
+          if (state === "listening")
+            listeningLucy.setAttribute("visible", true);
+        } else if (role === "paul") {
+          if (state === "thinking") thinkingPaul.setAttribute("visible", true);
+          if (state === "listening")
+            listeningPaul.setAttribute("visible", true);
+        }
+      }
     </script>
   </body>
 </html>
