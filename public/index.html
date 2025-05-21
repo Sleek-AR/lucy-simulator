@@ -39,59 +39,57 @@
         },
       });
 
+      AFRAME.registerComponent("lip-sync", {
+        init: function () {
+          const el = this.el;
+          this.mouthMesh = null;
+          this.mouthIndex = null;
+          this.speaking = false;
+          this.interval = null;
 
-    AFRAME.registerComponent('lip-sync', {
-      init: function () {
-        const el = this.el;
-        this.mouthMesh = null;
-        this.mouthIndex = null;
-        this.speaking = false;
-        this.interval = null;
-
-        el.addEventListener('model-loaded', () => {
-          const mesh = el.getObject3D('mesh');
-          mesh.traverse((node) => {
-            if (
-              node.isMesh &&
-              node.name === "Wolf3D_Head" &&
-              node.morphTargetDictionary &&
-              node.morphTargetInfluences
-            ) {
-              const index = node.morphTargetDictionary['mouthOpen'];
-              if (index !== undefined) {
-                this.mouthMesh = node;
-                this.mouthIndex = index;
+          el.addEventListener("model-loaded", () => {
+            const mesh = el.getObject3D("mesh");
+            mesh.traverse((node) => {
+              if (
+                node.isMesh &&
+                node.name === "Wolf3D_Head" &&
+                node.morphTargetDictionary &&
+                node.morphTargetInfluences
+              ) {
+                const index = node.morphTargetDictionary["mouthOpen"];
+                if (index !== undefined) {
+                  this.mouthMesh = node;
+                  this.mouthIndex = index;
+                }
               }
+            });
+          });
+
+          // Startet rhythmische Mundbewegung
+          el.addEventListener("speak", () => {
+            if (!this.mouthMesh || this.mouthIndex === null) return;
+            if (this.speaking) return;
+            this.speaking = true;
+
+            this.interval = setInterval(() => {
+              const t = Date.now() % 600; // periodisch
+              const open = Math.abs(Math.sin(t / 100)) * 0.9; // animierte Öffnung
+              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = open;
+            }, 60); // ca. 16x pro Sekunde
+          });
+
+          // Stoppt die Bewegung und schließt den Mund
+          el.addEventListener("stopspeak", () => {
+            if (this.interval) clearInterval(this.interval);
+            this.interval = null;
+            this.speaking = false;
+
+            if (this.mouthMesh && this.mouthIndex !== null) {
+              this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0;
             }
           });
-        });
-
-        // Startet rhythmische Mundbewegung
-        el.addEventListener('speak', () => {
-          if (!this.mouthMesh || this.mouthIndex === null) return;
-          if (this.speaking) return;
-          this.speaking = true;
-
-          this.interval = setInterval(() => {
-            const t = Date.now() % 600; // periodisch
-            const open = Math.abs(Math.sin(t / 100)) * 0.9; // animierte Öffnung
-            this.mouthMesh.morphTargetInfluences[this.mouthIndex] = open;
-          }, 60); // ca. 16x pro Sekunde
-        });
-
-        // Stoppt die Bewegung und schließt den Mund
-        el.addEventListener('stopspeak', () => {
-          if (this.interval) clearInterval(this.interval);
-          this.interval = null;
-          this.speaking = false;
-
-          if (this.mouthMesh && this.mouthIndex !== null) {
-            this.mouthMesh.morphTargetInfluences[this.mouthIndex] = 0;
-          }
-        });
-      }
-    });
-
+        },
+      });
 
       // Bewegung per Tastatur nur in Webmodus aktivieren
       window.addEventListener("DOMContentLoaded", () => {
@@ -190,7 +188,11 @@
       <a-plane color="#ccc" rotation="-90 0 0" width="30" height="30"></a-plane>
 
       <!-- KameraRig inkl. Kamera & Controller -->
-      <a-entity id="cameraRig" movement-controls="speed: 0.1" position="0 0.8 0.8">
+      <a-entity
+        id="cameraRig"
+        movement-controls="speed: 0.1"
+        position="0 0.8 0.8"
+      >
         <a-camera
           id="camera"
           wasd-controls-enabled="true"
@@ -230,15 +232,51 @@
         lip-sync
       ></a-entity>
 
-       <!-- Paul -->
+      <!-- Aufnahmebutton Lucy -->
+      <a-entity
+        id="lucyButton"
+        geometry="primitive: plane; height: 0.25; width: 1.8"
+        material="color: #00BFFF"
+        position="0 1 -1.5"
+        class="clickable"
+        text="value: 🎤 Mit Lucy sprechen - einmal antippen; align: center; color: white"
+        event-set__enter="_event: mouseenter; material.color: #007ACC"
+        event-set__leave="_event: mouseleave; material.color: #00BFFF"
+        onclick="selectActiveRole('lucy')"
+      ></a-entity>
+
+      <!-- Aufnahmebutton Lucy alt-->
+      <a-entity
+        id="recordButton"
+        geometry="primitive: plane; height: 0.3; width: 1.4"
+        material="color: #00BFFF"
+        position="0 3 -1.5"
+        text="value: 🎙 Leertaste oder Trigger halten; align: center"
+        class="clickable"
+      ></a-entity>
+
+      <!-- Paul -->
       <a-entity
         id="paul"
         gltf-model="#paulModel"
-        position="-5 0 -7"
-        rotation="0 50 0 "
+        position="-6.5 0 -7.5"
+        rotation="0 50 0"
         scale="1.5 1.5 1.5"
         visible="true"
         lip-sync
+      ></a-entity>
+
+      <a-entity
+        id="paulButton"
+        geometry="primitive: plane; height: 0.25; width: 1.8"
+        material="color: #00BFFF"
+        position="-6 1 -7"
+        rotation="0 50 0"
+        class="clickable"
+        text="value: 🎤 Mit Paul sprechen - einmal antippen; align: center; color: white"
+        event-set__enter="_event: mouseenter; material.color: #007ACC"
+        event-set__leave="_event: mouseleave; material.color: #00BFFF"
+        onclick="selectActiveRole('paul')"
       ></a-entity>
 
       <!-- Office -->
@@ -282,16 +320,6 @@
           repeat="indefinite"
         ></a-animation>
       </a-entity>
-
-      <!-- Aufnahmebutton -->
-      <a-entity
-        id="recordButton"
-        geometry="primitive: plane; height: 0.3; width: 1.4"
-        material="color: #00BFFF"
-        position="0 1 -1.5"
-        text="value: 🎙 Leertaste oder Trigger halten; align: center"
-        class="clickable"
-      ></a-entity>
 
       <!-- 🔽 Raum-UI-Menü für VR -->
       <a-entity id="vrMenu" position="2 1.5 -6">
@@ -426,6 +454,12 @@
       let audioChunks = [];
       let micStream;
       let isRecording = false;
+      let activeRole = "lucy"; // Standard: Lucy ist aktiv
+
+      function selectActiveRole(role) {
+        activeRole = role;
+        append(`🎭 Aktive Figur geändert: ${role}`);
+      }
 
       function append(msg) {
         log.innerHTML += `<div>${msg}</div>`;
@@ -437,15 +471,16 @@
           const response = await fetch("/tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
+            body: JSON.stringify({ text, role: activeRole }),
           });
           const audioBlob = await response.blob();
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
-          lucy.emit("speak");
+          const target = document.getElementById(activeRole);
+          target?.emit("speak");
           thinkingText.setAttribute("visible", false);
           audio.play();
-          audio.onended = () => lucy.emit("stopspeak");
+          audio.onended = () => target?.emit("stopspeak");
         } catch (error) {
           console.error("TTS-Fehler:", error);
           append("⚠️ Konnte Antwort nicht abspielen.");
@@ -454,12 +489,62 @@
       }
 
       function speak(text) {
-        playVoiceFromText(text);
+        speakWithRole(activeRole, text);
+      }
+
+      function speakWithRole(role, text) {
+        const name = role === "paul" ? "Paul" : "Lucy";
+        const target = document.getElementById(role);
+
+        updateFeedback(role, "thinking");
+
+        fetch("/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, role }),
+        })
+          .then((res) => res.blob())
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            target?.emit("speak");
+
+            audio.play();
+            audio.onended = () => {
+              target?.emit("stopspeak");
+              updateFeedback(role, "off");
+            };
+          });
+      }
+
+      function updateFeedback(role, state) {
+        const thinkingText = document.getElementById("thinkingText");
+        const listeningText = document.getElementById("listeningText");
+        const name = role === "paul" ? "Paul" : "Lucy";
+
+        if (state === "listening") {
+          listeningText.setAttribute(
+            "text",
+            "value",
+            `${name} nimmt dich gerade wahr...`
+          );
+          listeningText.setAttribute("visible", true);
+          thinkingText.setAttribute("visible", false);
+        } else if (state === "thinking") {
+          thinkingText.setAttribute("text", "value", `${name} denkt nach...`);
+          thinkingText.setAttribute("visible", true);
+          listeningText.setAttribute("visible", false);
+        } else {
+          thinkingText.setAttribute("visible", false);
+          listeningText.setAttribute("visible", false);
+        }
       }
 
       async function startRecording() {
         if (isRecording) return;
         isRecording = true;
+        updateFeedback(activeRole, "listening");
 
         try {
           micStream = await navigator.mediaDevices.getUserMedia({
@@ -487,7 +572,7 @@
             thinkingText.setAttribute("visible", true);
 
             try {
-              const role = roleSelect.value || "recruiter";
+              const role = activeRole;
               const res = await fetch(`/upload-audio?role=${role}`, {
                 method: "POST",
                 body: formData,
@@ -558,7 +643,7 @@
         }
       });
 
-           // Rollenauswahl aus Menü
+      // Rollenauswahl aus Menü
       function setRole(role) {
         roleSelect.value = role;
         append(`🎭 Rolle geändert: ${role}`);
@@ -589,7 +674,6 @@
           buttonEntity.setAttribute("material", "color", originalColor);
         }, 500);
       }
-
     </script>
   </body>
 </html>
