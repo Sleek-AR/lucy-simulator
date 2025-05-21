@@ -5,6 +5,7 @@
     <title>Lucy Bewerbungssimulator</title>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+
     <script>
       AFRAME.registerComponent("enable-controls", {
         init: function () {
@@ -232,26 +233,45 @@
         lip-sync
       ></a-entity>
 
-      <!-- Aufnahmebutton Lucy -->
+      <!-- Sprachwahl-Button Lucy -->
       <a-entity
         id="lucyButton"
-        geometry="primitive: plane; height: 0.25; width: 1.8"
-        material="color: #00BFFF"
-        position="0 1 -1.5"
         class="clickable"
-        text="value: 🎤 Mit Lucy sprechen - einmal antippen; align: center; color: white"
-        event-set__enter="_event: mouseenter; material.color: #007ACC"
-        event-set__leave="_event: mouseleave; material.color: #00BFFF"
+        position="-0.5 1.2 -2"
         onclick="selectActiveRole('lucy')"
-      ></a-entity>
+      >
+        <!-- Hintergrundfläche -->
+        <a-plane
+          width="0.8"
+          height="0.25"
+          color="#f57c00"
+          material="shader: flat"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #ef6c00"
+          event-set__leave="_event: mouseleave; material.color: #f57c00"
+        ></a-plane>
 
-      <!-- Aufnahmebutton Lucy alt-->
+        <!-- Text mit „Padding“ durch Position -->
+        <a-text
+          value="🎤 Mit Lucy sprechen"
+          align="left"
+          color="white"
+          width="1"
+          position="-0.3 0 0.01"
+        >
+          ></a-text
+        >
+      </a-entity>
+
+      <!-- Aufnahmebutton Lucy -->
       <a-entity
         id="recordButton"
-        geometry="primitive: plane; height: 0.3; width: 1.4"
+        geometry="primitive: plane; height: 0.3; width: 1.8"
         material="color: #00BFFF"
-        position="0 3 -1.5"
+        position="0 1 -1.5"
         text="value: 🎙 Leertaste oder Trigger halten; align: center"
+        event-set__enter="_event: mouseenter; material.color: #007ACC"
+        event-set__leave="_event: mouseleave; material.color: #00BFFF"
         class="clickable"
       ></a-entity>
 
@@ -259,30 +279,61 @@
       <a-entity
         id="paul"
         gltf-model="#paulModel"
-        position="-6.5 0 -7.5"
+        position="-6.2 0 -7.9"
         rotation="0 50 0"
         scale="1.5 1.5 1.5"
         visible="true"
         lip-sync
       ></a-entity>
 
+      <!-- Sprachwahl-Button Paul -->
       <a-entity
         id="paulButton"
-        geometry="primitive: plane; height: 0.25; width: 1.8"
-        material="color: #00BFFF"
-        position="-6 1 -7"
-        rotation="0 50 0"
         class="clickable"
-        text="value: 🎤 Mit Paul sprechen - einmal antippen; align: center; color: white"
+        position="-6.5 1.2 -7.5"
+        rotation="0 50 0"
+        onclick="selectActiveRole('paul')"
+      >
+        <!-- Hintergrundfläche -->
+        <a-plane
+          width="0.8"
+          height="0.25"
+          color="#f57c00"
+          material="shader: flat"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #ef6c00"
+          event-set__leave="_event: mouseleave; material.color: #f57c00"
+        ></a-plane>
+
+        <!-- Text mit „Padding“ durch Position -->
+        <a-text
+          value="🎤 Mit Paul sprechen"
+          align="left"
+          color="white"
+          width="1"
+          position="-0.3 0 0.01"
+        >
+          ></a-text
+        >
+      </a-entity>
+
+      <!-- Aufnahmebutton Paul -->
+      <a-entity
+        id="recordButton"
+        geometry="primitive: plane; height: 0.3; width: 1.8"
+        material="color: #00BFFF"
+        position="-6.0 1 -7.7"
+        rotation="0 50 0"
+        text="value: 🎙 Leertaste oder Trigger halten; align: center"
         event-set__enter="_event: mouseenter; material.color: #007ACC"
         event-set__leave="_event: mouseleave; material.color: #00BFFF"
-        onclick="selectActiveRole('paul')"
+        class="clickable"
       ></a-entity>
 
       <!-- Office -->
       <a-entity
         gltf-model="#officeSet"
-        position="-3 0 -6"
+        position="-4 0 -9"
         scale="0.7 0.7 0.7"
         rotation="0 0 0"
       ></a-entity>
