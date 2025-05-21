@@ -88,7 +88,6 @@ app.post("/upload-audio", upload.single("audio"), async (req, res) => {
 app.post("/tts", async (req, res) => {
   const { text, role = "lucy" } = req.body;
 
-  // 📢 Stimme wählen
   let voice = "nova";
   if (role === "paul") voice = "onyx";
 
