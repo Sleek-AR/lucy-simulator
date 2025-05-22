@@ -544,11 +544,12 @@
       let audioChunks = [];
       let micStream;
       let isRecording = false;
-      let activeRole = "lucy";
+      let activeSpeaker = "lucy";     // Figur: lucy oder paul
+      let activePrompt = "recruiter"; // Rollentyp für Lucy
 
-      function selectActiveRole(role) {
-        activeRole = role;
-        append(`🎭 Aktive Figur geändert: ${role}`);
+      function selectActiveRole(speaker) {
+        activeSpeaker = speaker;
+        append(`🎭 Aktive Figur geändert: ${speaker}`);
       }
 
       function append(msg) {
@@ -561,12 +562,12 @@
           const response = await fetch(`${BASE_URL}/tts`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text, role: activeRole }),
+            body: JSON.stringify({ text, role: activeSpeaker }),
           });
           const audioBlob = await response.blob();
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
-          const target = document.getElementById(activeRole);
+          const target = document.getElementById(activeSpeaker);
           target?.emit("speak");
           thinkingText.setAttribute("visible", false);
           audio.play();
@@ -579,11 +580,10 @@
       }
 
       function speak(text) {
-        speakWithRole(activeRole, text);
+        speakWithRole(activeSpeaker, text);
       }
 
       function speakWithRole(role, text) {
-        const name = role === "paul" ? "Paul" : "Lucy";
         const target = document.getElementById(role);
         updateFeedback(role, "thinking");
 
@@ -616,59 +616,52 @@
         listeningPaul.setAttribute("visible", false);
         if (role === "lucy") {
           if (state === "thinking") thinkingLucy.setAttribute("visible", true);
-          if (state === "listening")
-            listeningLucy.setAttribute("visible", true);
+          if (state === "listening") listeningLucy.setAttribute("visible", true);
         } else if (role === "paul") {
           if (state === "thinking") thinkingPaul.setAttribute("visible", true);
-          if (state === "listening")
-            listeningPaul.setAttribute("visible", true);
+          if (state === "listening") listeningPaul.setAttribute("visible", true);
         }
       }
 
       async function startRecording() {
         if (isRecording) return;
         isRecording = true;
-        updateFeedback(activeRole, "listening");
+        updateFeedback(activeSpeaker, "listening");
         try {
-          micStream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          mediaRecorder = new MediaRecorder(micStream, {
-            mimeType: "audio/webm",
-          });
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(micStream, { mimeType: "audio/webm" });
           audioChunks = [];
           mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
           mediaRecorder.onstop = async () => {
             isRecording = false;
             append("🛑 Aufnahme gestoppt.");
             blinker.style.display = "none";
-            updateFeedback(activeRole, "off");
+            updateFeedback(activeSpeaker, "off");
             if (micStream) micStream.getTracks().forEach((t) => t.stop());
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
             const formData = new FormData();
             formData.append("audio", audioBlob, "speech.webm");
             append("⏳ Sende Audio an Server...");
-            updateFeedback(activeRole, "thinking");
+            updateFeedback(activeSpeaker, "thinking");
             try {
-              const promptRole = roleSelect.value; // 👈 aktuelle Rollenauswahl aus dem Dropdown
-              const res = await fetch(`${BASE_URL}/upload-audio?role=${promptRole}`, {
-                  method: "POST",
-                  body: formData,
-                }
-              );
+              const promptToUse = activeSpeaker === "paul" ? "paul" : activePrompt;
+              const res = await fetch(`${BASE_URL}/upload-audio?role=${promptToUse}`, {
+                method: "POST",
+                body: formData,
+              });
               const data = await res.json();
               const reply = data.response || data.error || "Fehler bei Antwort";
-              append(`🤖 <b>${activeRole}:</b> ` + reply);
+              append(`🤖 <b>${activeSpeaker}:</b> ` + reply);
               speak(reply);
             } catch (error) {
               console.error("Upload-Fehler:", error);
               append("❌ Fehler beim Senden oder Verarbeiten.");
-              updateFeedback(activeRole, "off");
+              updateFeedback(activeSpeaker, "off");
             }
           };
           mediaRecorder.start();
           blinker.style.display = "block";
-          updateFeedback(activeRole, "listening");
+          updateFeedback(activeSpeaker, "listening");
           append("🎙️ Aufnahme läuft...");
         } catch (err) {
           isRecording = false;
@@ -682,9 +675,9 @@
         }
       }
 
-      function bindButton(button, role) {
+      function bindButton(button, speaker) {
         button.addEventListener("mousedown", () => {
-          selectActiveRole(role);
+          selectActiveRole(speaker);
           button.setAttribute("material", { color: "#FF0000" });
           startRecording();
         });
@@ -697,7 +690,7 @@
           stopRecording();
         });
         button.addEventListener("triggerdown", () => {
-          selectActiveRole(role);
+          selectActiveRole(speaker);
           button.setAttribute("material", { color: "#FF0000" });
           startRecording();
         });
@@ -712,8 +705,7 @@
 
       document.addEventListener("keydown", (e) => {
         if (e.code === "Space") {
-          const btn =
-            activeRole === "paul" ? recordButtonPaul : recordButtonLucy;
+          const btn = activeSpeaker === "paul" ? recordButtonPaul : recordButtonLucy;
           btn.setAttribute("material", { color: "#FF0000" });
           startRecording();
         }
@@ -721,8 +713,7 @@
 
       document.addEventListener("keyup", (e) => {
         if (e.code === "Space") {
-          const btn =
-            activeRole === "paul" ? recordButtonPaul : recordButtonLucy;
+          const btn = activeSpeaker === "paul" ? recordButtonPaul : recordButtonLucy;
           btn.setAttribute("material", { color: "#00BFFF" });
           stopRecording();
         }
@@ -730,13 +721,13 @@
 
       function setRole(role) {
         roleSelect.value = role;
-        activeRole = role; 
+        activePrompt = role;
         append(`🎭 Rolle geändert: ${role}`);
-        
+
         const isPhoneMode = role === "telefon";
         const callBtn = document.getElementById("simpleCallButton");
         const lucyEl = document.getElementById("lucy");
-        
+
         callBtn.setAttribute("visible", isPhoneMode);
         lucyEl.setAttribute("visible", !isPhoneMode);
         lucyEl.setAttribute("scale", isPhoneMode ? "0 0 0" : "1.5 1.5 1.5");
